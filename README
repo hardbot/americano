@@ -1,0 +1,12 @@
+Fahad Nathani
+UID: 203-940-502
+Email: fahadnathani@ucla.edu
+
+Partner:
+Robert Nguyen
+UID: 803-879-361
+Email: roberttn@ucla.edu
+
+Project 2A Submission
+
+Used a simple while loop that took input line by line and parsed the string into key and value tuples to be placed in a RecordFile.
