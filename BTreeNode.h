@@ -18,6 +18,11 @@
  */
 class BTLeafNode {
   public:
+    BTLeafNode()
+    {
+      first_key = 0;
+      second_key = 0;
+    }
    /**
     * Insert the (key, rid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.
@@ -102,9 +107,9 @@ class BTLeafNode {
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
-    recordid first_rec;
+    RecordId first_rec;
     int first_key;
-    recordid second_rec;
+    RecordId second_rec;
     int second_key;
     PageId next;
 }; 
