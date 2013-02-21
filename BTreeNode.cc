@@ -33,11 +33,45 @@ int BTLeafNode::getKeyCount()
  * @param rid[IN] the RecordId to insert
  * @return 0 if successful. Return an error code if the node is full.
  */
+
 RC BTLeafNode::insert(int key, const RecordId& rid)
 { 
   // Check if node is full
-    // Return 1
-  // Insert key to node
+  if (first_rec != NULL && second_rec != NULL)
+    return 1;
+
+  
+
+  // Check if node is empty
+  if (first_rec == NULL && second_rec == NULL)
+  {
+    // Insert into first element
+    first_key = key;
+    first_rec = rid;
+  }
+  // Check if second key exists when first doesn't
+  // Should not happen
+  else if (first_rec == NULL && second_rec != NULL)
+  {
+    return 1;
+  }
+  else if (second_rec == NULL)
+  {
+    if (first_key > key)
+    {
+      // Swap first_key with key
+      second_key = first_key;
+      second_rec = first_rec;
+      first_key = key;
+      first_rec = rec;
+    }
+    else
+    {
+      // Insert into second element
+      second_key = key;
+      second_rec = rid;
+    }
+  }
   return 0; 
 }
 
