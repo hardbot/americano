@@ -34,7 +34,12 @@ int BTLeafNode::getKeyCount()
  * @return 0 if successful. Return an error code if the node is full.
  */
 RC BTLeafNode::insert(int key, const RecordId& rid)
-{ return 0; }
+{ 
+  // Check if node is full
+    // Return 1
+  // Insert key to node
+  return 0; 
+}
 
 /*
  * Insert the (key, rid) pair to the node
@@ -48,7 +53,14 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
  */
 RC BTLeafNode::insertAndSplit(int key, const RecordId& rid, 
                               BTLeafNode& sibling, int& siblingKey)
-{ return 0; }
+{ 
+  // Check if sibling is empty
+    // ERR
+  // SetNextNodePtr = sibling
+  // sibling.insert(key,rid in this.node)
+  // remove this.node key
+  return 0; 
+}
 
 /*
  * Find the entry whose key value is larger than or equal to searchKey

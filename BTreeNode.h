@@ -102,6 +102,11 @@ class BTLeafNode {
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
+    recordid first_rec;
+    int first_key;
+    recordid second_rec;
+    int second_key;
+    PageId next;
 }; 
 
 
@@ -180,6 +185,7 @@ class BTNonLeafNode {
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
+
 }; 
 
 #endif /* BTNODE_H */
