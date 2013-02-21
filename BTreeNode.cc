@@ -37,39 +37,41 @@ int BTLeafNode::getKeyCount()
 RC BTLeafNode::insert(int key, const RecordId& rid)
 { 
   // Check if node is full
-  if (first_rec != NULL && second_rec != NULL)
+  if (first_rec.pid =! -1 && second_rec.pid != -1)
     return 1;
 
-  
-
   // Check if node is empty
-  if (first_rec == NULL && second_rec == NULL)
+  if (first_rec.pid == -1 && second_rec.pid == -1)
   {
     // Insert into first element
     first_key = key;
-    first_rec = rid;
+    first_rec.pid = rid.pid;
+    first_rec.sid = rid.sid;
   }
   // Check if second key exists when first doesn't
   // Should not happen
-  else if (first_rec == NULL && second_rec != NULL)
+  else if (first_rec.pid == -1 && second_rec.pid != -1)
   {
     return 1;
   }
-  else if (second_rec == NULL)
+  else if (second_rec.pid == -1)
   {
     if (first_key > key)
     {
       // Swap first_key with key
       second_key = first_key;
-      second_rec = first_rec;
+      second_rec.pid = first_rec.pid;
+      second_rec.sid = first_rec.sid;
       first_key = key;
-      first_rec = rec;
+      first_rec.pid = rid.pid;
+      first_rec.sid = rid.sid;
     }
     else
     {
       // Insert into second element
       second_key = key;
-      second_rec = rid;
+      second_rec.pid = rid.pid;
+      second_rec.sid = rid.sid;
     }
   }
   return 0; 

@@ -20,8 +20,12 @@ class BTLeafNode {
   public:
     BTLeafNode()
     {
-      first_key = 0;
-      second_key = 0;
+      first_key = -1;
+      second_key = -1;
+      first_rec.pid = -1;
+      first_rec.sid = -1;
+      second_rec.pid = -1;
+      second_rec.sid = -1;
     }
    /**
     * Insert the (key, rid) pair to the node.
