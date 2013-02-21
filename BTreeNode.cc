@@ -1,5 +1,5 @@
 #include "BTreeNode.h"
-#include <iostream>;
+#include <iostream>
 
 using namespace std;
 
@@ -114,7 +114,31 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::locate(int searchKey, int& eid)
-{ return 0; }
+{ 
+  // Naive iterative approach
+  // Binary search approach to be implemented later when
+  // more than 2 keys can be stored
+
+  if (searchKey > first_key)
+  {
+    if (searchKey > second_key)
+    {
+      // Cannot locate
+      return 1;
+    }
+    else
+    {
+      eid = second_key;
+      return 0;
+    }
+  }
+  else
+  {
+    eid = first_key;
+    return 0;
+  }
+  return 0; 
+}
 
 /*
  * Read the (key, rid) pair from the eid entry.

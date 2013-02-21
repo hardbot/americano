@@ -72,6 +72,6 @@ int main()
   assert(leaf2.insert(7,rid) == 1);
   cout << "Passed all test cases for insert!\n" << endl;
 
-
+  
   return 0;
 }
