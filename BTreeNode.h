@@ -27,6 +27,7 @@ class BTLeafNode {
       second_rec.pid = -1;
       second_rec.sid = -1;
     }
+    void print_leaf_node();
    /**
     * Insert the (key, rid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.

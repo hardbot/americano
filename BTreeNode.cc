@@ -1,4 +1,5 @@
 #include "BTreeNode.h"
+#include <iostream>;
 
 using namespace std;
 
@@ -34,25 +35,31 @@ int BTLeafNode::getKeyCount()
  * @return 0 if successful. Return an error code if the node is full.
  */
 
+void BTLeafNode::print_leaf_node()
+{
+  cout << "First_key: " << first_key << endl;
+  cout << "Second_key: " << second_key << endl;
+  cout << "first_rec.pid: " << first_rec.pid << endl;
+  cout << "first_rec.sid: " << first_rec.sid << endl;
+  cout << "second_rec.pid: " << second_rec.pid << endl;
+  cout << "second_rec.sid: " << second_rec.sid << endl << endl;
+}
+
 RC BTLeafNode::insert(int key, const RecordId& rid)
 { 
   // Check if node is full
-  if (first_rec.pid =! -1 && second_rec.pid != -1)
+  if (first_rec.pid != -1 && second_rec.pid != -1)
+    return 1;
+  else if (first_rec.pid == -1 && second_rec.pid != -1)
     return 1;
 
   // Check if node is empty
-  if (first_rec.pid == -1 && second_rec.pid == -1)
+  if (first_rec.pid == -1)
   {
     // Insert into first element
     first_key = key;
     first_rec.pid = rid.pid;
     first_rec.sid = rid.sid;
-  }
-  // Check if second key exists when first doesn't
-  // Should not happen
-  else if (first_rec.pid == -1 && second_rec.pid != -1)
-  {
-    return 1;
   }
   else if (second_rec.pid == -1)
   {
