@@ -175,6 +175,19 @@ int main()
   cout << "Passed all test cases for locate!" << endl;
 
 
+  BTLeafNode a;
+  assert(a.insert(1,rid) == 0);
+  assert(a.insert(2,rid) == 0);
+  assert(a.insert(3,rid) == 0);
+  assert(a.insert(4,rid) == 0);
+  assert(a.insert(5,rid) == 0);
+  assert(a.insert(6,rid) == 1);
+  assert(a.insert(7,rid) == 1);
+  BTLeafNode siblinga;
+  int sibling_key = -1;
+  assert(a.insertAndSplit(-1,rid, siblinga, sibling_key) == 1);
+  assert(a.insertAndSplit(6,rid, siblinga, sibling_key) == 0);
+  cout << "Passed all test cases for insertAndSplit!" << endl;
   
   return 0;
 }
