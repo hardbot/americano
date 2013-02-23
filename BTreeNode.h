@@ -12,6 +12,9 @@
 
 #include "RecordFile.h"
 #include "PageFile.h"
+
+#include <iostream>
+using namespace std;
 #define MAX_NUM_POINTERS 6
 
 class LeafNodeElement {
@@ -68,7 +71,10 @@ class BTLeafNode {
     {
       return element_size == 0;
     }
-    void print_leaf_node();
+    void print_leaf_node()
+    {
+      cout << "Size: " << element_size << endl;
+    }
    /**
     * Insert the (key, rid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.

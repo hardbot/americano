@@ -41,10 +41,6 @@ int BTLeafNode::getKeyCount()
  * @return 0 if successful. Return an error code if the node is full.
  */
 
-void BTLeafNode::print_leaf_node()
-{
-}
-
 RC BTLeafNode::insert(int key, const RecordId& rid)
 { 
   // Check for negative keys
@@ -56,7 +52,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
   int eid = -1;
   // Check for duplicates;
   locate(key,eid);
-  if (eid == key)
+  if (eid == element_array[eid].get_key())
     return 1;
 
   LeafNodeElement tmp;
@@ -84,7 +80,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
     }
   }
 
-  element_size++;
+  element_size += 1;
   return 0; 
 }
 
@@ -105,9 +101,14 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
     return 1;
   if (!sibling.is_empty())
     return 1;
+  int eid = -1;
+  locate(key, eid);
+  if (key == element_array[eid].get_key())
+    return 1;
 
   // Hold all overflowed elements in tmp array
-  LeafNodeElement *overflow = new LeafNodeElement[element_size+1];
+  int overflow_size = element_size+1;
+  LeafNodeElement *overflow = new LeafNodeElement[overflow_size];
   for (int i = 0; i < element_size; i++)
   {
     overflow[i] = element_array[i];
@@ -117,7 +118,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 
   // Bubble Sort backwards
   LeafNodeElement tmp;
-  for (int i = element_size+1; i > 0; i--)
+  for (int i = overflow_size; i > 0; i--)
   {
     if(overflow[i].get_key() < overflow[i-1].get_key())
     {
@@ -142,20 +143,21 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   }
 
   // Insert into current node
-  int half = element_size/2;
+  int half = (overflow_size)/2;
+  element_size = 0;
   for (int i = 0; i < half; i++)
   {
     insert(overflow[i].get_key(), overflow[i].get_rec_id());
   }
-  element_size = half;
 
   // Insert into sibling node
-  for (int i = half; i < element_size; i++)
+  for (int i = half; i < overflow_size; i++)
   {
     sibling.insert(overflow[i].get_key(), overflow[i].get_rec_id());
   }
   siblingKey = overflow[half].get_key();
 
+  free(overflow);
   return 0; 
 }
 
@@ -185,13 +187,13 @@ RC BTLeafNode::locate(int searchKey, int& eid)
   while (low <= high)
   {
 
-    mid = (low + high) / 2;
+    mid = (low + high)/2;
     if (searchKey < element_array[mid].get_key())
     {
       high = mid - 1;
       if ( low > high )
       {
-        eid = element_array[mid].get_key();
+        eid = mid;
         return 0;
       }
     }
@@ -200,13 +202,13 @@ RC BTLeafNode::locate(int searchKey, int& eid)
       low = mid + 1;
       if ( low > high )
       {
-        eid = element_array[mid+1].get_key();
+        eid = mid+1;
         return 0;
       }
     }
     else
     {
-      eid = element_array[mid].get_key();
+      eid = mid;
       return 0;
     }
   }

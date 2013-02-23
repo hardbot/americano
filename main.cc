@@ -148,32 +148,31 @@ int main()
   assert(eid == -1);
   assert(leaf3.insert(1,rid) == 0);
   assert(leaf3.locate(1,eid) == 0);
-  assert(eid == 1);
+  assert(eid == 0);
   assert(leaf3.insert(3,rid) == 0);
   assert(leaf3.locate(3,eid) == 0);
-  assert(eid == 3);
-  assert(leaf3.locate(2,eid) == 0);
-  assert(eid == 3);
-  assert(leaf3.locate(0,eid) == 0);
   assert(eid == 1);
+  assert(leaf3.locate(2,eid) == 0);
+  assert(eid == 1);
+  assert(leaf3.locate(0,eid) == 0);
+  assert(eid == 0);
   assert(leaf3.locate(-1,eid) == 1);
   assert(leaf3.insert(5,rid) == 0);
   assert(leaf3.insert(9,rid) == 0);
   assert(leaf3.insert(12,rid) == 0);
   assert(leaf3.insert(15,rid) == 1);
   assert(leaf3.locate(4,eid) == 0);
-  assert(eid == 5);
+  assert(eid == 2);
   assert(leaf3.locate(7,eid) == 0);
-  assert(eid == 9);
+  assert(eid == 3);
   assert(leaf3.locate(13,eid) == 1);
-  assert(eid == 9);
+  assert(eid == 3);
   assert(leaf3.locate(12,eid) == 0);
-  assert(eid == 12);
+  assert(eid == 4);
   eid = -1;
   assert(leaf3.locate(11,eid) == 0);
-  assert(eid == 12);
+  assert(eid == 4);
   cout << "Passed all test cases for locate!" << endl;
-
 
   BTLeafNode a;
   assert(a.insert(1,rid) == 0);
@@ -187,6 +186,8 @@ int main()
   int sibling_key = -1;
   assert(a.insertAndSplit(-1,rid, siblinga, sibling_key) == 1);
   assert(a.insertAndSplit(6,rid, siblinga, sibling_key) == 0);
+  assert(sibling_key == 3);
+  assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for insertAndSplit!" << endl;
   
   return 0;
