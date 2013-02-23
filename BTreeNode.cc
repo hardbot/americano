@@ -32,7 +32,9 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  * @return the number of keys in the node
  */
 int BTLeafNode::getKeyCount()
-{ return 0; }
+{ 
+  return element_size;
+}
 
 /*
  * Insert a (key, rid) pair to the node.
@@ -221,14 +223,24 @@ RC BTLeafNode::locate(int searchKey, int& eid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
-{ return 0; }
+{ 
+  //error
+  if(eid>element_size) return 1;
+
+  key = element_array[eid].get_key();
+  rid.sid = element_array[eid].get_rec_id().sid;
+  rid.pid = element_array[eid].get_rec_id().pid;
+  return 0;
+}
 
 /*
  * Return the pid of the next slibling node.
  * @return the PageId of the next sibling node 
  */
 PageId BTLeafNode::getNextNodePtr()
-{ return 0; }
+{ 
+  return next;
+}
 
 /*
  * Set the pid of the next slibling node.
@@ -236,7 +248,12 @@ PageId BTLeafNode::getNextNodePtr()
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::setNextNodePtr(PageId pid)
-{ return 0; }
+{ 
+  //if(pid == NULL) return 1;
+  if(pid<0) return 1;
+  next = pid;
+  return 0;
+}
 
 /*
  * Read the content of the node from the page pid in the PageFile pf.

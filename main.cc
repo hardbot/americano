@@ -188,6 +188,10 @@ int main()
   assert(a.insertAndSplit(-1,rid, siblinga, sibling_key) == 1);
   assert(a.insertAndSplit(6,rid, siblinga, sibling_key) == 0);
   cout << "Passed all test cases for insertAndSplit!" << endl;
+
+  //BTLeafNode b;
+
+
   
   return 0;
 }
