@@ -12,6 +12,48 @@
 
 #include "RecordFile.h"
 #include "PageFile.h"
+#define MAX_NUM_POINTERS 6
+
+class LeafNodeElement {
+  public:
+    LeafNodeElement()
+    {
+      key = -1;
+      rec_id.pid = -1;
+      rec_id.sid = -1;
+    }
+    int is_empty()
+    {
+      return key == -1;
+    }
+    void clear()
+    {
+      key = -1;
+      rec_id.pid = -1;
+      rec_id.sid = -1;
+    }
+    void set_key(const int& k)
+    {
+      key = k;
+    }
+    void set_rec_id(const RecordId& r)
+    {
+      rec_id.sid = r.sid;
+      rec_id.pid = r.pid;
+    }
+    int get_key()
+    {
+      return key;
+    }
+    RecordId get_rec_id()
+    {
+      return rec_id;
+    }
+  private:
+    int key;
+    RecordId rec_id;
+};
+
 
 /**
  * BTLeafNode: The class representing a B+tree leaf node.
@@ -20,12 +62,11 @@ class BTLeafNode {
   public:
     BTLeafNode()
     {
-      first_key = -1;
-      second_key = -1;
-      first_rec.pid = -1;
-      first_rec.sid = -1;
-      second_rec.pid = -1;
-      second_rec.sid = -1;
+      element_size = 0;
+    }
+    bool is_empty()
+    {
+      return element_size == 0;
     }
     void print_leaf_node();
    /**
@@ -112,12 +153,10 @@ class BTLeafNode {
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
-    RecordId first_rec;
-    int first_key;
-    RecordId second_rec;
-    int second_key;
+    LeafNodeElement element_array[MAX_NUM_POINTERS-1];
+    int element_size;
     PageId next;
-}; 
+};
 
 
 /**

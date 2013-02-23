@@ -1,5 +1,5 @@
 #include "BTreeNode.h"
-#include <iostream>;
+#include <iostream>
 
 using namespace std;
 
@@ -14,7 +14,7 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
 	RC rc = pf.read(pid, buffer);
 	return rc;
 }
-    
+
 /*
  * Write the content of the node to the page pid in the PageFile pf.
  * @param pid[IN] the PageId to write to
@@ -43,50 +43,48 @@ int BTLeafNode::getKeyCount()
 
 void BTLeafNode::print_leaf_node()
 {
-  cout << "First_key: " << first_key << endl;
-  cout << "Second_key: " << second_key << endl;
-  cout << "first_rec.pid: " << first_rec.pid << endl;
-  cout << "first_rec.sid: " << first_rec.sid << endl;
-  cout << "second_rec.pid: " << second_rec.pid << endl;
-  cout << "second_rec.sid: " << second_rec.sid << endl << endl;
 }
 
 RC BTLeafNode::insert(int key, const RecordId& rid)
 { 
-  // Check if node is full
-  if (first_rec.pid != -1 && second_rec.pid != -1)
+  // Check for negative keys
+  if (key < 0)
     return 1;
-  else if (first_rec.pid == -1 && second_rec.pid != -1)
+  // Check if node is full
+  if (element_size == MAX_NUM_POINTERS-1)
+    return 1;
+  int eid = -1;
+  // Check for duplicates;
+  locate(key,eid);
+  if (eid == key)
     return 1;
 
-  // Check if node is empty
-  if (first_rec.pid == -1)
+  LeafNodeElement tmp;
+
+  // Insert to end of leaf node
+  element_array[element_size].set_key(key);
+  element_array[element_size].set_rec_id(rid);
+
+  // Bubble Sort backwards
+  for (int i = element_size; i > 0; i--)
   {
-    // Insert into first element
-    first_key = key;
-    first_rec.pid = rid.pid;
-    first_rec.sid = rid.sid;
-  }
-  else if (second_rec.pid == -1)
-  {
-    if (first_key > key)
+    if(element_array[i].get_key() < element_array[i-1].get_key())
     {
-      // Swap first_key with key
-      second_key = first_key;
-      second_rec.pid = first_rec.pid;
-      second_rec.sid = first_rec.sid;
-      first_key = key;
-      first_rec.pid = rid.pid;
-      first_rec.sid = rid.sid;
+      // Swap
+      tmp.set_key(element_array[i].get_key());
+      tmp.set_rec_id(element_array[i].get_rec_id());
+      element_array[i].set_key(element_array[i-1].get_key());
+      element_array[i].set_rec_id(element_array[i-1].get_rec_id());
+      element_array[i-1].set_key(tmp.get_key());
+      element_array[i-1].set_rec_id(tmp.get_rec_id());
     }
     else
     {
-      // Insert into second element
-      second_key = key;
-      second_rec.pid = rid.pid;
-      second_rec.sid = rid.sid;
+      break;
     }
   }
+
+  element_size++;
   return 0; 
 }
 
@@ -101,13 +99,63 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::insertAndSplit(int key, const RecordId& rid, 
-                              BTLeafNode& sibling, int& siblingKey)
+    BTLeafNode& sibling, int& siblingKey)
 { 
-  // Check if sibling is empty
-    // ERR
-  // SetNextNodePtr = sibling
-  // sibling.insert(key,rid in this.node)
-  // remove this.node key
+  if (key < 0)
+    return 1;
+  if (!sibling.is_empty())
+    return 1;
+
+  // Hold all overflowed elements in tmp array
+  LeafNodeElement *overflow = new LeafNodeElement[element_size+1];
+  for (int i = 0; i < element_size; i++)
+  {
+    overflow[i] = element_array[i];
+  }
+  overflow[element_size].set_key(key);
+  overflow[element_size].set_rec_id(rid);
+
+  // Bubble Sort backwards
+  LeafNodeElement tmp;
+  for (int i = element_size+1; i > 0; i--)
+  {
+    if(overflow[i].get_key() < overflow[i-1].get_key())
+    {
+      // Swap
+      tmp.set_key(overflow[i].get_key());
+      tmp.set_rec_id(overflow[i].get_rec_id());
+      overflow[i].set_key(overflow[i-1].get_key());
+      overflow[i].set_rec_id(overflow[i-1].get_rec_id());
+      overflow[i-1].set_key(tmp.get_key());
+      overflow[i-1].set_rec_id(tmp.get_rec_id());
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  // Clear current node
+  for (int i = 0; i < element_size; i++)
+  {
+    element_array[i].clear();
+  }
+
+  // Insert into current node
+  int half = element_size/2;
+  for (int i = 0; i < half; i++)
+  {
+    insert(overflow[i].get_key(), overflow[i].get_rec_id());
+  }
+  element_size = half;
+
+  // Insert into sibling node
+  for (int i = half; i < element_size; i++)
+  {
+    sibling.insert(overflow[i].get_key(), overflow[i].get_rec_id());
+  }
+  siblingKey = overflow[half].get_key();
+
   return 0; 
 }
 
@@ -120,7 +168,50 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::locate(int searchKey, int& eid)
-{ return 0; }
+{ 
+  if (searchKey < 0)
+    return 1;
+  // Binary search approach to be implemented later when
+  // more than 2 keys can be stored
+  if (element_size <= 0)
+    return 1;
+  if (searchKey > element_array[element_size-1].get_key())
+    return 1;
+
+  int low = 0;
+  int mid = 0;
+  int high = element_size-1;
+
+  while (low <= high)
+  {
+
+    mid = (low + high) / 2;
+    if (searchKey < element_array[mid].get_key())
+    {
+      high = mid - 1;
+      if ( low > high )
+      {
+        eid = element_array[mid].get_key();
+        return 0;
+      }
+    }
+    else if (searchKey > element_array[mid].get_key())
+    {
+      low = mid + 1;
+      if ( low > high )
+      {
+        eid = element_array[mid+1].get_key();
+        return 0;
+      }
+    }
+    else
+    {
+      eid = element_array[mid].get_key();
+      return 0;
+    }
+  }
+  return 1; 
+}
 
 /*
  * Read the (key, rid) pair from the eid entry.
@@ -155,7 +246,7 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
  */
 RC BTNonLeafNode::read(PageId pid, const PageFile& pf)
 { return 0; }
-    
+
 /*
  * Write the content of the node to the page pid in the PageFile pf.
  * @param pid[IN] the PageId to write to

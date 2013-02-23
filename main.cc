@@ -20,6 +20,7 @@ int main()
   // run the SQL engine taking user commands from standard input (console).
   //SqlEngine::run(stdin);
 
+  /* Test cases for n = 3
   // Test file
   BTLeafNode leaf;  
   RecordId rid;
@@ -72,6 +73,108 @@ int main()
   assert(leaf2.insert(7,rid) == 1);
   cout << "Passed all test cases for insert!\n" << endl;
 
+  // Test 3
+  BTLeafNode leaf3;
+  rid.pid = 1;
+  rid.sid = 2;
+  int eid = -1;
+  // Locate in empty node
+  assert(leaf3.locate(1, eid) == 1);
+  assert(leaf3.insert(1,rid) == 0);
+  assert(leaf3.locate(1, eid) == 0);
+  assert(leaf3.locate(2, eid) == 1);
+  assert(eid == 1);
+  // Locate something that has not been inserted
+  assert(leaf3.insert(2,rid) == 0);
+  assert(leaf3.locate(2, eid) == 0);
+  assert(leaf3.insert(3,rid) == 1);
+  assert(leaf3.locate(3, eid) == 1);
+  assert(leaf3.locate(2, eid) == 0);
+  assert(eid == 2);
 
+  BTLeafNode leaf31;
+  assert(leaf31.insert(5,rid) == 0);
+  assert(leaf31.locate(3,eid) == 0);
+  assert(leaf31.insert(9,rid) == 0);
+  assert(leaf31.locate(3,eid) == 0);
+  assert(eid == 5);
+  assert(leaf31.locate(8,eid) == 0);
+  assert(eid == 9);
+  eid = 1;
+  assert(leaf31.locate(6,eid) == 0);
+  cout << eid << endl;
+  assert(eid == 9);
+  assert(leaf31.locate(9,eid) == 0);
+  assert(eid == 9);
+  assert(leaf31.locate(10,eid) == 1);
+  cout << "Passed all test cases for locate!\n" << endl;
+  */
+
+  /* Test Cases for n = 6 */
+  BTLeafNode leaf;  
+  RecordId rid;
+  rid.pid = 14;
+  rid.sid = 15;
+  assert(leaf.insert(1,rid) == 0);
+  assert(leaf.insert(2,rid) == 0);
+  assert(leaf.insert(3,rid) == 0);
+  assert(leaf.insert(4,rid) == 0);
+  assert(leaf.insert(5,rid) == 0);
+  assert(leaf.insert(6,rid) == 1);
+  assert(leaf.insert(7,rid) == 1);
+  assert(leaf.insert(8,rid) == 1);
+
+  BTLeafNode leaf2;
+  assert(leaf2.insert(-1,rid) == 1);
+
+  assert(leaf2.insert(5,rid) == 0);
+  assert(leaf2.insert(3,rid) == 0);
+  assert(leaf2.insert(4,rid) == 0);
+  assert(leaf2.insert(1,rid) == 0);
+  assert(leaf2.insert(2,rid) == 0);
+  assert(leaf2.insert(6,rid) == 1);
+
+  assert(leaf2.insert(0,rid) == 1);
+  assert(leaf2.insert(1,rid) == 1);
+  assert(leaf2.insert(2,rid) == 1);
+  assert(leaf2.insert(3,rid) == 1);
+  assert(leaf2.insert(4,rid) == 1);
+  assert(leaf2.insert(5,rid) == 1);
+  cout << "Passed all test cases for insert!" << endl;
+
+  BTLeafNode leaf3;
+  int eid = -1;
+  assert(leaf3.locate(1,eid) == 1);
+  assert(eid == -1);
+  assert(leaf3.insert(1,rid) == 0);
+  assert(leaf3.locate(1,eid) == 0);
+  assert(eid == 1);
+  assert(leaf3.insert(3,rid) == 0);
+  assert(leaf3.locate(3,eid) == 0);
+  assert(eid == 3);
+  assert(leaf3.locate(2,eid) == 0);
+  assert(eid == 3);
+  assert(leaf3.locate(0,eid) == 0);
+  assert(eid == 1);
+  assert(leaf3.locate(-1,eid) == 1);
+  assert(leaf3.insert(5,rid) == 0);
+  assert(leaf3.insert(9,rid) == 0);
+  assert(leaf3.insert(12,rid) == 0);
+  assert(leaf3.insert(15,rid) == 1);
+  assert(leaf3.locate(4,eid) == 0);
+  assert(eid == 5);
+  assert(leaf3.locate(7,eid) == 0);
+  assert(eid == 9);
+  assert(leaf3.locate(13,eid) == 1);
+  assert(eid == 9);
+  assert(leaf3.locate(12,eid) == 0);
+  assert(eid == 12);
+  eid = -1;
+  assert(leaf3.locate(11,eid) == 0);
+  assert(eid == 12);
+  cout << "Passed all test cases for locate!" << endl;
+
+
+  
   return 0;
 }
