@@ -10,7 +10,10 @@ using namespace std;
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::read(PageId pid, const PageFile& pf)
-{ return 0; }
+{ 
+	RC rc = pf.read(pid, buffer);
+	return rc;
+}
 
 /*
  * Write the content of the node to the page pid in the PageFile pf.
@@ -19,7 +22,10 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::write(PageId pid, PageFile& pf)
-{ return 0; }
+{ 
+  RC rc = pf.write(pid, buffer);
+  return rc;
+}
 
 /*
  * Return the number of keys stored in the node.
