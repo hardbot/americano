@@ -17,55 +17,17 @@
 using namespace std;
 #define MAX_NUM_POINTERS 6
 
-
-/*
-class LeafNodeElement {
-  public:
-    LeafNodeElement()
-    {
-      key = -1;
-      rec_id.pid = -1;
-      rec_id.sid = -1;
-    }
-    int is_empty()
-    {
-      return key == -1;
-    }
-    void clear()
-    {
-      key = -1;
-      rec_id.pid = -1;
-      rec_id.sid = -1;
-    }
-    void set_key(const int& k)
-    {
-      key = k;
-    }
-    void set_rec_id(const RecordId& r)
-    {
-      rec_id.sid = r.sid;
-      rec_id.pid = r.pid;
-    }
-    int get_key()
-    {
-      return key;
-    }
-    RecordId get_rec_id()
-    {
-      return rec_id;
-    }
-  private:
-    int key;
-    RecordId rec_id;
-};
-*/
 struct LeafNodeElement
 {
     RecordId rec_id;
     int key;
 };
 
-
+struct NonLeafNodeElement
+{
+  PageId pid;
+  int key;
+}
 
 /**
  * BTLeafNode: The class representing a B+tree leaf node.
@@ -73,19 +35,8 @@ struct LeafNodeElement
 class BTLeafNode {
   public:
     BTLeafNode()
-    {
-      
-      //element_size = 0;
-    }
-    bool is_empty()
-    {
-      //return element_size == 0;
-        return true;
-    }
-    void print_leaf_node()
-    {
-      cout << "Size: " << element_size << endl;
-    }
+    {}
+
    /**
     * Insert the (key, rid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.
@@ -163,10 +114,26 @@ class BTLeafNode {
     * @return 0 if successful. Return an error code if there is an error.
     */
     RC write(PageId pid, PageFile& pf);
+
     void print_buffer()
     {
-      cout << (int)buffer[1] << endl;
+      int size;
+      int element_size = sizeof(struct LeafNodeElement);
+      LeafNodeElement lfe;
+      memcpy(&size,buffer,sizeof(int));
+      cout << "Size: " << size << endl;
+      for (int i = 0; i < size; i++)
+      {
+        lfe = get_element(i);
+        cout << "Element " << i << ": " << endl;
+        cout << "sid: " << lfe.rec_id.sid << " | pid: " << lfe.rec_id.pid
+             << "  | key: " << lfe.key << endl;
+      }
+      cout << endl;
     }
+
+    LeafNodeElement get_element(int eid);
+    void set_element(LeafNodeElement lfe, int eid);
 
   private:
    /**
