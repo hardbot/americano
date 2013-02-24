@@ -152,6 +152,10 @@ class BTLeafNode {
     * @return 0 if successful. Return an error code if there is an error.
     */
     RC write(PageId pid, PageFile& pf);
+    void print_buffer()
+    {
+      cout << (int)buffer[1] << endl;
+    }
 
   private:
    /**

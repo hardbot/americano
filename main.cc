@@ -190,9 +190,19 @@ int main()
   assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for insertAndSplit!" << endl;
 
-  //BTLeafNode b;
-
-
+  BTLeafNode b;
+  PageFile pf;
+  PageId pid = 0;
+  b.read(pid,pf);
+  b.insert(1,rid);
+  b.write(pid,pf);
+  BTLeafNode c;
+  c.read(pid,pf);
+  assert(c.insert(2,rid) == 0);
+  assert(c.insert(3,rid) == 0);
+  assert(c.insert(4,rid) == 0);
+  assert(c.insert(5,rid) == 0);
+  assert(c.insert(6,rid) == 0);
   
   return 0;
 }
