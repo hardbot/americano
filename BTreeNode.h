@@ -27,7 +27,7 @@ struct NonLeafNodeElement
 {
   PageId pid;
   int key;
-}
+};
 
 /**
  * BTLeafNode: The class representing a B+tree leaf node.

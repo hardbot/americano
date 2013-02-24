@@ -134,7 +134,6 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   if (sibling.getKeyCount() != 0)
     return 1;
   // Check for duplicates;
-  get_element(eid);
   if (locate(key,eid) == 0 && (get_element(eid)).key == key)
     return 1;
 
@@ -386,4 +385,5 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
   // Rest of root
   memcpy(buffer+8,&pid1,sizeof(int));
   memcpy(buffer+12,&key,sizeof(int));
+  return 0;
 }
