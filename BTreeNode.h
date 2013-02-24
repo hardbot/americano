@@ -14,6 +14,8 @@
 #include "PageFile.h"
 #define MAX_NUM_POINTERS 6
 
+
+/*
 class LeafNodeElement {
   public:
     LeafNodeElement()
@@ -53,6 +55,13 @@ class LeafNodeElement {
     int key;
     RecordId rec_id;
 };
+*/
+struct LeafNodeElement
+{
+    RecordId rec_id;
+    int key;
+};
+
 
 
 /**
@@ -62,11 +71,13 @@ class BTLeafNode {
   public:
     BTLeafNode()
     {
-      element_size = 0;
+      
+      //element_size = 0;
     }
     bool is_empty()
     {
-      return element_size == 0;
+      //return element_size == 0;
+        return true;
     }
     void print_leaf_node();
    /**
@@ -153,8 +164,9 @@ class BTLeafNode {
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
-    LeafNodeElement element_array[MAX_NUM_POINTERS-1];
-    int element_size;
+    //char *start_of_elements;
+    //LeafNodeElement element_array[MAX_NUM_POINTERS-1];
+    //int element_size;
     PageId next;
 };
 
