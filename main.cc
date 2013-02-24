@@ -111,24 +111,68 @@ int main()
   */
 
   /* Test Cases for n = 6 */
-  BTLeafNode leaf;  
+  
   RecordId rid;
   rid.pid = 14;
   rid.sid = 15;
+/*
+  PageFile pf;
+  pf.open("temp.tbl", 'w');
+
+  PageId pid = 0;
+  BTLeafNode leaf;  
+
+  char * buffer;
+  buffer = (char *) malloc(1024);
+
+  int i =0;
+  memcpy(buffer, &i, sizeof(int));
+
+  pf.write(0, buffer); 
+  leaf.read(pid, pf);
+
+
+  cout<<leaf.getKeyCount()<<endl;
   assert(leaf.insert(1,rid) == 0);
+  //leaf.write(pid, pf);
+  cout<<leaf.getKeyCount()<<endl;
+
+  //leaf.read(pid, pf);
   assert(leaf.insert(2,rid) == 0);
+  //leaf.write(pid, pf);
+  cout<<leaf.getKeyCount()<<endl;
+
+  //leaf.read(pid, pf);
   assert(leaf.insert(3,rid) == 0);
+  //leaf.write(pid, pf);
+  cout<<leaf.getKeyCount()<<endl;
+
+  //leaf.read(pid, pf);
   assert(leaf.insert(4,rid) == 0);
+  //leaf.write(pid, pf);
+  cout<<leaf.getKeyCount()<<endl;
+
+  //leaf.read(pid, pf);
   assert(leaf.insert(5,rid) == 0);
+  //leaf.write(pid, pf);
+  cout<<leaf.getKeyCount()<<endl;
+
+  //leaf.read(pid, pf);
   assert(leaf.insert(6,rid) == 1);
+  //leaf.write(pid, pf);
+
   assert(leaf.insert(7,rid) == 1);
   assert(leaf.insert(8,rid) == 1);
-
+*/
   BTLeafNode leaf2;
+  cout<<leaf2.getKeyCount()<<endl;
   assert(leaf2.insert(-1,rid) == 1);
+  cout<<leaf2.getKeyCount()<<endl;
 
   assert(leaf2.insert(5,rid) == 0);
+  cout<<leaf2.getKeyCount()<<endl;
   assert(leaf2.insert(3,rid) == 0);
+  cout<<leaf2.getKeyCount()<<endl;
   assert(leaf2.insert(4,rid) == 0);
   assert(leaf2.insert(1,rid) == 0);
   assert(leaf2.insert(2,rid) == 0);
@@ -141,7 +185,7 @@ int main()
   assert(leaf2.insert(4,rid) == 1);
   assert(leaf2.insert(5,rid) == 1);
   cout << "Passed all test cases for insert!" << endl;
-
+/*
   BTLeafNode leaf3;
   int eid = -1;
   assert(leaf3.locate(1,eid) == 1);
@@ -190,6 +234,7 @@ int main()
   assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for insertAndSplit!" << endl;
 
+<<<<<<< HEAD
   BTLeafNode b;
   PageFile pf;
   PageId pid = 0;
@@ -204,5 +249,19 @@ int main()
   assert(c.insert(5,rid) == 0);
   assert(c.insert(6,rid) == 0);
   
+=======
+  //BTLeafNode b;
+//  PageFile p;
+  //assert(b.insert(1, rid)==0);
+  //assert(b.write(0, p));
+
+
+
+
+
+
+
+  */
+>>>>>>> be976260f1a3c4b8e99c7eead0a8c8c03093af10
   return 0;
 }

@@ -33,7 +33,10 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  */
 int BTLeafNode::getKeyCount()
 { 
-  return element_size;
+  int count = 0;
+  memcpy(&count, buffer, sizeof(int));
+  return count;
+  //return element_size;
 }
 
 /*
@@ -43,25 +46,89 @@ int BTLeafNode::getKeyCount()
  * @return 0 if successful. Return an error code if the node is full.
  */
 
+void BTLeafNode::print_leaf_node()
+{
+}
+
+//assume that before insert is called, the LeafNode Page file is loaded into buffer
 RC BTLeafNode::insert(int key, const RecordId& rid)
 { 
+
+  int elementSize = sizeof(struct LeafNodeElement);
+  
   // Check for negative keys
   if (key < 0)
     return 1;
   // Check if node is full
-  if (element_size == MAX_NUM_POINTERS-1)
-    return 1;
+  //if (element_size == MAX_NUM_POINTERS-1)
+  //  return 1;
   int eid = -1;
   // Check for duplicates;
-  locate(key,eid);
-  if (eid == element_array[eid].get_key())
+//locate(key,eid);
+ // if (eid == key)
+//    return 1;
+  int index = getKeyCount();
+  if(index == MAX_NUM_POINTERS-1)
+  {
     return 1;
+  }
 
-  LeafNodeElement tmp;
+  //point to start of elements
+  char * start_of_elements = buffer+4;
+  char * element_ptr = buffer+4;
+  LeafNodeElement leafNodeElement;
+
+  //increment element pointer to end of last element
+  element_ptr += index*elementSize;
+  //memcpy(&leafNodeElement, element_ptr, sizeof(struct LeafNodeElement));
+  
+  leafNodeElement.rec_id.pid = rid.pid;
+  leafNodeElement.rec_id.sid = rid.sid;
+  leafNodeElement.key = key;
+
+  memcpy(element_ptr, &leafNodeElement, elementSize);
+
+
+
+  LeafNodeElement leftElement;
+  LeafNodeElement temp;
+  LeafNodeElement rightElement;
+
+  for(int i = index*elementSize; i>elementSize; i -= elementSize)
+  {
+    memcpy(&leftElement, start_of_elements+i-elementSize, elementSize);
+    memcpy(&rightElement, start_of_elements+i, elementSize);
+    if(rightElement.key < leftElement.key)
+    {
+      temp.key=rightElement.key;
+      temp.rec_id.pid = rightElement.rec_id.pid;
+      temp.rec_id.sid = rightElement.rec_id.sid;
+      rightElement.key = leftElement.key;
+      rightElement.rec_id.pid = leftElement.rec_id.pid;
+      rightElement.rec_id.sid = leftElement.rec_id.sid;
+      leftElement.key =  temp.key;
+      leftElement.rec_id.pid = temp.rec_id.pid;
+      leftElement.rec_id.pid = temp.rec_id.sid;
+    }
+    else
+    {
+      break;
+    }
+
+  }
+
+
+  //LeafNodeElement tmp;
+  index++;
+  printf("Element size is %d\n", index);
+  memcpy(buffer, &index, sizeof(int));
+
+
+/*
 
   // Insert to end of leaf node
-  element_array[element_size].set_key(key);
-  element_array[element_size].set_rec_id(rid);
+  //element_array[element_size].set_key(key);
+  //lement_array[element_size].set_rec_id(rid);
 
   // Bubble Sort backwards
   for (int i = element_size; i > 0; i--)
@@ -82,7 +149,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
     }
   }
 
-  element_size += 1;
+  element_size++;*/
   return 0; 
 }
 
@@ -99,6 +166,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 RC BTLeafNode::insertAndSplit(int key, const RecordId& rid, 
     BTLeafNode& sibling, int& siblingKey)
 { 
+  /*
   if (key < 0)
     return 1;
   if (!sibling.is_empty())
@@ -158,8 +226,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
     sibling.insert(overflow[i].get_key(), overflow[i].get_rec_id());
   }
   siblingKey = overflow[half].get_key();
-
-  free(overflow);
+*/
   return 0; 
 }
 
@@ -173,6 +240,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  */
 RC BTLeafNode::locate(int searchKey, int& eid)
 { 
+  /*
   if (searchKey < 0)
     return 1;
   // Binary search approach to be implemented later when
@@ -214,6 +282,7 @@ RC BTLeafNode::locate(int searchKey, int& eid)
       return 0;
     }
   }
+  */
   return 1; 
 }
 
@@ -226,6 +295,7 @@ RC BTLeafNode::locate(int searchKey, int& eid)
  */
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 { 
+  /*
   //error
   if(eid>element_size) return 1;
 
@@ -233,6 +303,7 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
   rid.sid = element_array[eid].get_rec_id().sid;
   rid.pid = element_array[eid].get_rec_id().pid;
   return 0;
+  */
 }
 
 /*
@@ -241,7 +312,8 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
  */
 PageId BTLeafNode::getNextNodePtr()
 { 
-  return next;
+  //return next;
+  return 0;
 }
 
 /*
@@ -251,9 +323,11 @@ PageId BTLeafNode::getNextNodePtr()
  */
 RC BTLeafNode::setNextNodePtr(PageId pid)
 { 
+  /*
   //if(pid == NULL) return 1;
   if(pid<0) return 1;
   next = pid;
+  return 0;*/
   return 0;
 }
 
