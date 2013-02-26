@@ -217,6 +217,11 @@ class BTNonLeafNode {
     */
     RC write(PageId pid, PageFile& pf);
 
+
+    NonLeafNodeElement get_element(int eid);
+    void set_element(NonLeafNodeElement nlfe, int eid);
+
+
   private:
    /**
     * The main memory buffer for loading the content of the disk page 

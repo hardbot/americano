@@ -166,7 +166,7 @@ int main()
   assert(leaf2.insert(3,rid) == 1);
   assert(leaf2.insert(4,rid) == 1);
   assert(leaf2.insert(5,rid) == 1);
-  cout << "Passed all test cases for insert!" << endl;
+  cout << "Passed all test cases for BTLeafNode insert!" << endl;
 
   BTLeafNode leaf3;
   char * buffer3 = (char *) malloc(1024);
@@ -204,7 +204,7 @@ int main()
   eid = -1;
   assert(leaf3.locate(11,eid) == 0);
   assert(eid == 4);
-  cout << "Passed all test cases for locate!" << endl;
+  cout << "Passed all test cases for BTLeafNode locate!" << endl;
 
   BTLeafNode a;
   a.read(pid,pf);
@@ -223,7 +223,192 @@ int main()
   assert(a.insertAndSplit(6,rid, siblinga, sibling_key) == 0);
   assert(sibling_key == 4);
   assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
-  cout << "Passed all test cases for insertAndSplit!" << endl;
+  cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
+
+  PageId pid2 = 0;
+  PageFile pf2;
+  pf2.open("temp2.tbl", 'w');
+  BTNonLeafNode nonleaf;
+  char * nonleafbuffer;
+  nonleafbuffer = (char*) malloc(1024);
+
+  int i2 = 0;
+  memcpy(nonleafbuffer, &i2, sizeof(int));
+  pf2.write(0, nonleafbuffer);
+  nonleaf.read(pid2, pf2);
+
+  //cout<<nonleaf.insert(1,pid2)<<"is the value returned by insert(1, pid2)\n";
+  assert(nonleaf.insert(1,pid2) == 0);
+  assert(nonleaf.insert(5,pid2) == 0);
+  assert(nonleaf.insert(3,pid2) == 0);
+  assert(nonleaf.insert(9,pid2) == 0);
+  assert(nonleaf.insert(2,pid2) == 0);
+  assert(nonleaf.insert(6,pid2) == 1);
+  assert(nonleaf.insert(7,pid2) == 1);
+  assert(nonleaf.insert(8,pid2) == 1);
+
+  nonleaf.write(pid2, pf2);
+/*
+  PageId pid3 = 0;
+  PageFile pf3;
+  pf3.open("temp3.tbl", 'w');
+
+  BTNonLeafNode nonleaf2;
+  char* nonleafbuffer2;
+  nonleafbuffer2 = (char*) malloc(1024);
+
+  int i3 = 0;
+  memcpy(nonleafbuffer, &i3, sizeof(int));
+  pf3.write(0, nonleafbuffer2);
+  nonleaf2.read(pid3, pf3);
+
+  assert(nonleaf2.insert(-1, pid3)==1);
+  assert(nonleaf2.insert(5, pid3)==1);
+*/
+
+
+  //PageId pid3 = 0;
+ // PageFile pf3;
+  //pf3.open("temp3.tbl", 'w');
+
+  BTNonLeafNode nonleaf2;
+ // nonleaf2.read(pid3,pf3);
+  assert(nonleaf2.insert(-1,pid2) == 1);
+  char * nonleafbuffer2 = (char *) malloc(1024);
+
+  nonleaf2.read(pid2, pf2);
+  assert(nonleaf2.insert(5,pid2) == 1);
+  i =0;
+  memcpy(nonleafbuffer2, &i, sizeof(int));
+
+  pf2.write(0, nonleafbuffer2); 
+  nonleaf2.read(pid2, pf2);
+  assert(nonleaf2.insert(3,pid2) == 0);
+  assert(nonleaf2.insert(4,pid2) == 0);
+  assert(nonleaf2.insert(1,pid2) == 0);
+  assert(nonleaf2.insert(2,pid2) == 0);
+  assert(nonleaf2.insert(6,pid2) == 0);
+
+  //leaf2.print_buffer();
+  assert(nonleaf2.insert(0,pid2) == 1);
+  assert(nonleaf2.insert(1,pid2) == 1);
+  assert(nonleaf2.insert(2,pid2) == 1);
+  assert(nonleaf2.insert(3,pid2) == 1);
+  assert(nonleaf2.insert(4,pid2) == 1);
+  assert(nonleaf2.insert(5,pid2) == 1);
+  cout << "Passed all test cases for BTNonLeafNode insert!" << endl;
+
+
+  BTNonLeafNode nonleaf3;
+  char * nonleafbuffer3 = (char *) malloc(1024);
+  int rightmost_child_ptr = 100;
+  memcpy(nonleafbuffer3+4, &rightmost_child_ptr, sizeof(int));
+  i = 0;
+  //enter size in buffer
+  memcpy(nonleafbuffer3, &i, sizeof(int));
+  //write to pagefile p2
+  pf2.write(0, nonleafbuffer3); 
+  //read pid2 into nonleaf3
+  nonleaf3.read(pid2,pf2);
+  int pageid = -1;
+  //check if locate errors if there are no children and nonleaf is empty
+  assert(nonleaf3.locateChildPtr(1, pageid)==1);
+  assert(pageid==-1);
+
+  assert(nonleaf3.insert(1, 5)==0);
+  assert(nonleaf3.locateChildPtr(1, pageid)==0);
+ // cout<<"Value of pageid: "<<pageid<<endl;
+  assert(pageid==100);
+
+  assert(nonleaf3.insert(3, 7)==0);
+  assert(nonleaf3.locateChildPtr(0, pageid)==0);
+  assert(pageid==5);
+  assert(nonleaf3.locateChildPtr(2, pageid)==0);
+  assert(pageid==7);
+  assert(nonleaf3.locateChildPtr(5, pageid)==0);
+  assert(pageid==100);
+
+  assert(nonleaf3.insert(7, 9)==0);
+  assert(nonleaf3.locateChildPtr(5, pageid)==0);
+  assert(pageid==9);
+  assert(nonleaf3.locateChildPtr(10, pageid)==0);
+  assert(pageid==100);
+  assert(nonleaf3.locateChildPtr(-1, pageid)==1);
+  assert(pageid==100);
+  cout<<"Passed all tests for BTNonLeafNode locateChildPtr!"<<endl;
+
+
+  BTNonLeafNode nonleaf4;
+  char * nonleafbuffer4 = (char *) malloc(1024);
+  rightmost_child_ptr = 100;
+  memcpy(nonleafbuffer4+4, &rightmost_child_ptr, sizeof(int));
+  i = 0;
+  //enter size in buffer
+  memcpy(nonleafbuffer4, &i, sizeof(int));
+  //write to pagefile p2
+  pf2.write(0, nonleafbuffer4); 
+  //read pid2 into nonleaf3
+  nonleaf4.read(pid2,pf2);
+  assert(nonleaf4.insert(1, 1)==0);
+  assert(nonleaf4.insert(2,2)==0);
+  assert(nonleaf4.insert(3,3)==0);
+  assert(nonleaf4.insert(4,4)==0);
+  assert(nonleaf4.insert(5,5)==0);
+  assert(nonleaf4.insert(6,6)==1);
+  assert(nonleaf4.insert(7,7)==1);
+  assert(nonleaf4.insert(8,8)==1);
+
+  BTNonLeafNode siblingn;
+  siblingn.read(pid2,pf2);
+  int midKey = -1;
+  assert(nonleaf4.insertAndSplit(-1, 6,siblingn, midKey)==1);
+  assert(midKey==-1);
+  assert(nonleaf4.insertAndSplit(6, 6, siblingn, midKey)==0);
+ // cout<<"Value of midKey is: "<<midKey<<endl;
+  //cout<<"Number of elements in sibling 1: "<<nonleaf4.getKeyCount()<<endl;
+  //cout<<"Number of elements in sibling 2: "<<siblingn.getKeyCount()<<endl;
+  cout<<"Passed test cases for BTNonLeafNode insertAndSplit!\n";
+
+
+
+
+
+
+  /*
+  int pageid = -1;
+  assert(nonleaf3.locateChildPtr(1,pageid) == 1);
+  assert(pageid == -1);
+  assert(nonleaf3.insert(1,pid2) == 0);
+  //leaf3.print_buffer();
+  assert(nonleaf3.locateChildPtr(1,pageid) == 0);
+  assert(pageid == 0);
+  assert(nonleaf3.insert(3,pid2) == 0);
+  assert(nonleaf3.locateChildPtr(3,pageid) == 0);
+  assert(pageid == 1);
+  assert(nonleaf3.locateChildPtr(2,pageid) == 0);
+  assert(pageid == 1);
+  assert(nonleaf3.locateChildPtr(0,pageid) == 0);
+  assert(pageid == 0);
+  assert(nonleaf3.locateChildPtr(-1,pageid) == 1);
+  assert(nonleaf3.insert(5,pid2) == 0);
+  assert(nonleaf3.insert(9,pid2) == 0);
+
+  assert(nonleaf3.insert(12,pid2) == 0);
+  assert(nonleaf3.insert(15,pid2) == 1);
+  assert(nonleaf3.locateChildPtr(4,pageid) == 0);
+  assert(pageid == 2);
+  assert(nonleaf3.locateChildPtr(7,pageid) == 0);
+  assert(pageid == 3);
+  assert(nonleaf3.locateChildPtr(13,pageid) == 1);
+  assert(pageid == 3);
+  assert(nonleaf3.locateChildPtr(12,pageid) == 0);
+  assert(pageid == 4);
+  pageid = -1;
+  assert(nonleaf3.locateChildPtr(11,pageid) == 0);
+  assert(pageid == 4);
+  cout << "Passed all test cases for BTLeafNode locateChildPtr!" << endl;
+
+*/
 
   return 0;
 }

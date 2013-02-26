@@ -16,6 +16,7 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
 	return rc;
 }
 
+
 /*
  * Write the content of the node to the page pid in the PageFile pf.
  * @param pid[IN] the PageId to write to
@@ -61,7 +62,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
   if(num_elements == MAX_NUM_POINTERS-1)
     return 1;
   // Check for duplicates;
-  get_element(eid);
+
   if (locate(key,eid) == 0 && (get_element(eid)).key == key)
     return 1;
 
@@ -89,7 +90,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
       right_element.rec_id.sid = left_element.rec_id.sid;
       left_element.key = temp.key;
       left_element.rec_id.pid = temp.rec_id.pid;
-      left_element.rec_id.pid = temp.rec_id.sid;
+      left_element.rec_id.sid = temp.rec_id.sid;
 
       // Write swap to buffer
       set_element(left_element, i-1);
@@ -346,7 +347,63 @@ int BTNonLeafNode::getKeyCount()
  * @return 0 if successful. Return an error code if the node is full.
  */
 RC BTNonLeafNode::insert(int key, PageId pid)
-{ return 0; }
+{ 
+  int eid = -1;
+  int num_elements = getKeyCount();
+  int element_size = sizeof(struct NonLeafNodeElement);
+  NonLeafNodeElement element, left_element, right_element, temp;
+
+  //check for negative keys
+  if(key<0)
+    return 1;
+  //check if node is full
+  if(num_elements == MAX_NUM_POINTERS-1)
+    return 1;
+
+  //if(locate(key,eid)==0 && (get_element(eid)).key==key)
+ // {
+   // return 1;
+  //}
+
+  // Set element to insert
+  element.pid = pid;
+  element.key = key;
+  set_element(element, num_elements);
+
+  // Bubble Sort 
+  for(int i = num_elements; i > 0; i--)
+  {
+    // Get elements from buffer
+    left_element = get_element(i-1);
+    right_element = get_element(i);
+
+    if(right_element.key < left_element.key)
+    {
+      // Swap elements
+      temp.key = right_element.key;
+      temp.pid = right_element.pid;
+      right_element.key = left_element.key;
+      right_element.pid = left_element.pid;
+      left_element.key = temp.key;
+      left_element.pid = temp.pid;
+
+
+      // Write swap to buffer
+      set_element(left_element, i-1);
+      set_element(right_element, i);
+    }
+    else
+    {
+      break;
+    }
+
+  }
+  // Iterate size
+  num_elements++;
+  memcpy(buffer, &num_elements, sizeof(int));
+
+  return 0;
+}
 
 /*
  * Insert the (key, pid) pair to the node
@@ -359,7 +416,77 @@ RC BTNonLeafNode::insert(int key, PageId pid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, int& midKey)
-{ return 0; }
+{ 
+  int eid = -1;
+  int num_elements = getKeyCount();
+  int element_size = sizeof(struct NonLeafNodeElement);
+  int num_overflow = num_elements + 1;
+  int half = (num_overflow)/2;
+  
+  NonLeafNodeElement tmp;
+
+  // Check for negative parameters
+  if (key < 0)
+    return 1;
+  // Check if sibling is empty
+  if (sibling.getKeyCount() != 0)
+    return 1;
+  // Check for duplicates;
+ // if (locate(key,eid) == 0 && (get_element(eid)).key == key)
+ //   return 1;
+
+  midKey = half;
+
+  // Hold all overflow elements in temp array
+  NonLeafNodeElement *overflow = new NonLeafNodeElement[num_overflow];
+  for (int i = 0; i < num_elements; i++)
+  {
+    overflow[i] = get_element(i);
+  }
+  overflow[element_size].key = key;
+  overflow[element_size].pid = pid;
+
+  // Backwards Bubble Sort
+  for (int i = num_elements-1; i > 0; i--)
+  {
+    if(overflow[i].key < overflow[i-1].key)
+    {
+      // Swap Elements
+      tmp.key = overflow[i].key;
+      tmp.pid = overflow[i].pid;
+      overflow[i].key = overflow[i-1].key;
+      overflow[i].pid = overflow[i-1].pid;
+      overflow[i-1].key = tmp.key;
+      overflow[i-1].pid = tmp.pid;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  // Clear current node
+  // Set number of elemnts in node to zero
+  num_elements = 0;
+  memcpy(buffer, &num_elements, sizeof(int));//element_size);
+
+  // Insert into current node
+  for (int i = 0; i < half; i++)
+  {
+    insert(overflow[i].key, overflow[i].pid);
+  }
+  memcpy(&num_elements, buffer, sizeof(int));
+  num_elements--;
+  memcpy(buffer, &num_elements, sizeof(int));
+
+  // Insert into sibling node
+  for (int i = half; i < num_overflow; i++)
+  {
+    sibling.insert(overflow[i].key, overflow[i].pid);
+  }
+
+  return 0; 
+}
 
 /*
  * Given the searchKey, find the child-node pointer to follow and
@@ -369,7 +496,66 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
-{ return 0; }
+{ 
+  //assume buffer is sorted
+  int num_elements = getKeyCount();
+  //cout<<"Key count: "<<num_elements<<endl;
+  int element_size = sizeof(struct NonLeafNodeElement);
+  int low = 0;
+  int mid = 0;
+  int high = num_elements - 1;
+
+  int pid_to_return = 0;
+
+  // Check for negative parameters
+  if (searchKey < 0)
+    return 1;
+  if (num_elements <= 0)
+    return 1;
+  //if greater than largest value, set pid to rightmost child pointer stored in buffer+4
+  if (searchKey >= (get_element(num_elements-1).key))
+  {
+    memcpy(&pid_to_return, buffer+4, sizeof(int));
+    pid = pid_to_return;
+    return 0;
+  }
+
+  // Binary Search
+  while (low <= high)
+  {
+    mid = (low + high)/2;
+    // Search Lower
+    if (searchKey < (get_element(mid)).key)
+    {
+      high = mid - 1;
+      if ( low > high )
+      {
+       // eid = mid;
+        pid = get_element(mid).pid;
+        return 0;
+      }
+    }
+    // Search Higher
+    else if (searchKey > (get_element(mid)).key)
+    {
+      low = mid + 1;
+      if ( low > high )
+      {
+        pid = get_element(mid+1).pid;
+        return 0;
+      }
+    }
+    // Equal
+    else
+    {
+
+      pid = get_element(mid+1).pid;
+      return 0;
+    }
+  }
+  return 1; 
+
+}
 
 /*
  * Initialize the root node with (pid1, key, pid2).
@@ -388,3 +574,20 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
   memcpy(buffer+12,&key,sizeof(int));
   return 0;
 }
+
+NonLeafNodeElement BTNonLeafNode::get_element(int eid)
+{
+  NonLeafNodeElement nlfe;
+  int element_size = sizeof(struct NonLeafNodeElement);
+  memcpy(&nlfe,buffer+8+(eid*element_size),element_size);
+  return nlfe;
+
+}
+
+
+void BTNonLeafNode::set_element(NonLeafNodeElement nlfe, int eid)
+{
+  int element_size = sizeof(struct NonLeafNodeElement);
+  memcpy(buffer+8+(eid*element_size),&nlfe,element_size);
+}
+
