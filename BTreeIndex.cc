@@ -29,7 +29,39 @@ BTreeIndex::BTreeIndex()
  */
 RC BTreeIndex::open(const string& indexname, char mode)
 {
-    return 0;
+    // if mode is R,
+    // init
+    // if W
+    // then continue;
+    return pf.open(indexname, mode);
+}
+
+RC BTreeIndex::init()
+{
+    TreeMeta tm;
+    char buffer[1024];
+    pf.read(0, buffer);
+    memcpy(&tm, buffer, sizeof(struct TreeMeta));
+    if (tm.root > 0)
+      rootPid = tm.root;
+}
+
+BTNonLeafNode BTreeIndex::getNonLeaf(PageId pid)
+{
+    BTNonLeafNode node;
+    char buffer[1024];
+    pf.read(pid, buffer);
+    memcpy(&node, buffer, sizeof(struct BTNonLeafNode));
+    return node;
+}
+
+BTLeafNode BTreeIndex::getLeaf(PageId pid)
+{
+    BTLeafNode node;
+    char buffer[1024];
+    pf.read(pid, buffer);
+    memcpy(&node, buffer, sizeof(struct BTLeafNode));
+    return node;
 }
 
 /*
@@ -38,7 +70,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
  */
 RC BTreeIndex::close()
 {
-    return 0;
+    return pf.close();
 }
 
 /*
@@ -49,6 +81,13 @@ RC BTreeIndex::close()
  */
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
+    // Initalize root if doesn't exist
+    if (rootPid == -1)
+    {
+      BTNonLeafNode root;
+      root.initializeRoot(0, key, 1);
+      rootPid = 1;
+    }
     return 0;
 }
 
@@ -86,5 +125,22 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
  */
 RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 {
+  /*
+    // Initalize
+    BTLeafNode lf;
+    memcpy(lf,&pf+8+cursor.pid, ));
+
+    // See if eid is in current leaf node
+    if (lf.getKeyCount() < cursor.eid)
+    {
+      // Set to sibling
+      cursor.pid = lf.getNextNodePtr();
+      cursor.eid = 0;
+
+      memcpy(lf,&pf+8+cursor.pid,sizeof(BTLeafNode));
+    }
+    key = (lf.get_element(cursor.eid)).key;
+    rid = (lf.get_element(cursor.eid)).rec_id;
     return 0;
+    */
 }

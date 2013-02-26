@@ -27,6 +27,11 @@ typedef struct {
   int     eid;  
 } IndexCursor;
 
+struct TreeMeta{
+  PageId root;
+  int height;
+};
+
 /**
  * Implements a B-Tree index for bruinbase.
  * 
@@ -35,6 +40,10 @@ class BTreeIndex {
  public:
   BTreeIndex();
 
+  RC init();
+  struct BTNonLeafNode getNonLeaf(PageId pid);
+  RC setNonLeaf
+  struct BTLeafNode getLeaf(PageId pid);
   /**
    * Open the index file in read or write mode.
    * Under 'w' mode, the index file should be created if it does not exist.
