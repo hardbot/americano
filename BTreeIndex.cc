@@ -29,39 +29,50 @@ BTreeIndex::BTreeIndex()
  */
 RC BTreeIndex::open(const string& indexname, char mode)
 {
-    // if mode is R,
-    // init
-    // if W
-    // then continue;
-    return pf.open(indexname, mode);
+    RC ret = pf.open(indexname, mode);
+    if (mode == 'w')
+      init();
+    return ret;
 }
+
+/*
+RC BTreeIndex::printTree(int cur_height, int pid)
+{
+  if (cur_height == treeHeight)
+  {
+    getLeaf(pid).print_buffer();
+  }
+  else
+  {
+  }
+}
+*/
 
 RC BTreeIndex::init()
 {
-    TreeMeta tm;
-    char buffer[1024];
-    pf.read(0, buffer);
-    memcpy(&tm, buffer, sizeof(struct TreeMeta));
-    if (tm.root > 0)
-      rootPid = tm.root;
+  char buffer[1024];
+  TreeMeta tm;
+  tm.root = rootPid = 1;
+  tm.height = treeHeight = 1;
+  memcpy(buffer, &tm, sizeof(struct TreeMeta));
+  pf.write(0, buffer);
+
 }
 
-BTNonLeafNode BTreeIndex::getNonLeaf(PageId pid)
+RC BTreeIndex::getLeaf(PageId pid, BTLeafNode &lf)
 {
-    BTNonLeafNode node;
     char buffer[1024];
     pf.read(pid, buffer);
-    memcpy(&node, buffer, sizeof(struct BTNonLeafNode));
-    return node;
+    memcpy(&lf, buffer, sizeof(struct BTLeafNode));
+    return 0;
 }
 
-BTLeafNode BTreeIndex::getLeaf(PageId pid)
+RC BTreeIndex::getNonLeaf(PageId pid, BTNonLeafNode &nlf)
 {
-    BTLeafNode node;
     char buffer[1024];
     pf.read(pid, buffer);
-    memcpy(&node, buffer, sizeof(struct BTLeafNode));
-    return node;
+    memcpy(&nlf, buffer, sizeof(struct BTNonLeafNode));
+    return 0;
 }
 
 /*
@@ -73,6 +84,30 @@ RC BTreeIndex::close()
     return pf.close();
 }
 
+RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid)
+{
+  int child_pid;
+  BTLeafNode leaf;
+  BTNonLeafNode non_leaf;
+
+  // End case if reached leaf
+  if (cur_height == treeHeight)
+  {
+    getLeaf(pid, leaf);
+    if ( leaf.insert(key, rid) )
+      return 1;
+    leaf.write(pid, pf);
+  }
+  // Look through nonleaf nodes for key
+  else
+  {
+    getNonLeaf(pid, non_leaf);
+    non_leaf.locateChildPtr(key, child_pid);
+    insert_rec(cur_height+1, child_pid, key, rid);
+  }
+  return 0;
+}
+
 /*
  * Insert (key, RecordId) pair to the index.
  * @param key[IN] the key for the value inserted into the index
@@ -81,14 +116,8 @@ RC BTreeIndex::close()
  */
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
-    // Initalize root if doesn't exist
-    if (rootPid == -1)
-    {
-      BTNonLeafNode root;
-      root.initializeRoot(0, key, 1);
-      rootPid = 1;
-    }
-    return 0;
+    // Assume Tree is initialized
+    return insert_rec(1, rootPid, key, rid);
 }
 
 /*

@@ -10,6 +10,7 @@
 #include "Bruinbase.h"
 #include "SqlEngine.h"
 #include "BTreeNode.h"
+#include "BTreeIndex.h"
 
 #include <assert.h>
 #include <iostream>
@@ -335,7 +336,7 @@ int main()
   assert(pageid==100);
   assert(nonleaf3.locateChildPtr(-1, pageid)==1);
   assert(pageid==100);
-  cout<<"Passed all tests for BTNonLeafNode locateChildPtr!"<<endl;
+  cout<<"Passed all test cases for BTNonLeafNode locateChildPtr!"<<endl;
 
 
   BTNonLeafNode nonleaf4;
@@ -367,7 +368,7 @@ int main()
  // cout<<"Value of midKey is: "<<midKey<<endl;
   //cout<<"Number of elements in sibling 1: "<<nonleaf4.getKeyCount()<<endl;
   //cout<<"Number of elements in sibling 2: "<<siblingn.getKeyCount()<<endl;
-  cout<<"Passed test cases for BTNonLeafNode insertAndSplit!\n";
+  cout<<"Passed all test cases for BTNonLeafNode insertAndSplit!\n";
 
 
 
@@ -411,6 +412,28 @@ int main()
 */
 
 
+  // Test cases for BTreeIndex Insert
+  BTreeIndex tree1;
+  RecordId t_rid;
+  t_rid.pid = 1;
+  t_rid.sid = 2;
+  tree1.open("pf.test", 'w');
+
+  //tree1.init();
+  assert(tree1.insert(1, t_rid) == 0);
+  assert(tree1.insert(2, t_rid) == 0);
+  assert(tree1.insert(3, t_rid) == 0);
+  assert(tree1.insert(4, t_rid) == 0);
+  assert(tree1.insert(5, t_rid) == 0);
+  assert(tree1.insert(6, t_rid) == 1);
+  assert(tree1.insert(7, t_rid) == 1);
+  assert(tree1.insert(8, t_rid) == 1);
+  assert(tree1.insert(9, t_rid) == 1);
+  assert(tree1.insert(10, t_rid) == 1);
+
+  tree1.close();
+
+  cout << "Passed all test casses for BTreeIndex insert!" << endl;
 
   return 0;
 }

@@ -435,7 +435,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
  // if (locate(key,eid) == 0 && (get_element(eid)).key == key)
  //   return 1;
 
-  midKey = half;
+  midKey = (get_element(half)).key;
 
   // Hold all overflow elements in temp array
   NonLeafNodeElement *overflow = new NonLeafNodeElement[num_overflow];

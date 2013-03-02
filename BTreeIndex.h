@@ -13,6 +13,7 @@
 #include "Bruinbase.h"
 #include "PageFile.h"
 #include "RecordFile.h"
+#include "BTreeNode.h"
              
 /**
  * The data structure to point to a particular entry at a b+tree leaf node.
@@ -41,9 +42,9 @@ class BTreeIndex {
   BTreeIndex();
 
   RC init();
-  struct BTNonLeafNode getNonLeaf(PageId pid);
-  RC setNonLeaf
-  struct BTLeafNode getLeaf(PageId pid);
+  //RC setNonLeaf;
+  RC getLeaf(PageId pid, BTLeafNode &lf);
+  RC getNonLeaf(PageId pid, BTNonLeafNode &nlf);
   /**
    * Open the index file in read or write mode.
    * Under 'w' mode, the index file should be created if it does not exist.
@@ -58,6 +59,8 @@ class BTreeIndex {
    * @return error code. 0 if no error
    */
   RC close();
+
+  RC insert_rec(int cur_height, PageId pid, int key, const RecordId& rid);
     
   /**
    * Insert (key, RecordId) pair to the index.
@@ -98,6 +101,7 @@ class BTreeIndex {
    * @return error code. 0 if no error
    */
   RC readForward(IndexCursor& cursor, int& key, RecordId& rid);
+  //RC printTree(int pid);
   
  private:
   PageFile pf;         /// the PageFile used to store the actual b+tree in disk
