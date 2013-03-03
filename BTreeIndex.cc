@@ -113,7 +113,6 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     // Propogate key up to root
     if (propagate == 1)
     {
-      cout << "propagate" << endl;
       // Set new root and meta
       rootPid = pf.endPid();
       treeHeight++;

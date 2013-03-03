@@ -472,13 +472,13 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   memcpy(buffer, &num_elements, sizeof(int));//element_size);
 
   // Insert into current node
-  for (int i = 0; i < half-1; i++)
+  for (int i = 0; i < half; i++)
   {
     insert(overflow[i].key, overflow[i].pid);
   }
-  //memcpy(&num_elements, buffer, sizeof(int));
-  //num_elements = getKeyCount() - 1;
-  //memcpy(buffer, &num_elements, sizeof(int));
+  memcpy(&num_elements, buffer, sizeof(int));
+  num_elements = getKeyCount() - 1;
+  memcpy(buffer, &num_elements, sizeof(int));
 
   // Insert into sibling node
   for (int i = half; i < num_overflow; i++)

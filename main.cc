@@ -112,7 +112,6 @@ int main()
   */
 
   /* Test Cases for n = 6 */
- /* 
   RecordId rid;
   rid.pid = 14;
   rid.sid = 15;
@@ -226,6 +225,7 @@ int main()
   assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
 
+  /*
   PageId pid2 = 0;
   PageFile pf2;
   pf2.open("temp2.tbl", 'w');
@@ -297,7 +297,6 @@ int main()
   assert(nonleaf2.insert(4,pid2) == 1);
   assert(nonleaf2.insert(5,pid2) == 1);
   cout << "Passed all test cases for BTNonLeafNode insert!" << endl;
-
 
   BTNonLeafNode nonleaf3;
   char * nonleafbuffer3 = (char *) malloc(1024);
@@ -374,7 +373,7 @@ int main()
 
 
 
-  int pageid = -1;
+  pageid = -1;
   assert(nonleaf3.locateChildPtr(1,pageid) == 1);
   assert(pageid == -1);
   assert(nonleaf3.insert(1,pid2) == 0);
@@ -406,8 +405,7 @@ int main()
   assert(nonleaf3.locateChildPtr(11,pageid) == 0);
   assert(pageid == 4);
   cout << "Passed all test cases for BTLeafNode locateChildPtr!" << endl;
-
-*/
+  */
 
   // Test cases for BTreeIndex Insert
   BTreeIndex tree1;
@@ -434,14 +432,15 @@ int main()
   assert(tree1.insert(12, t_rid) == 0);
   assert(tree1.insert(13, t_rid) == 0);
   assert(tree1.insert(14, t_rid) == 0);
-  tree1.print_height();
   assert(tree1.insert(15, t_rid) == 0);
+  tree1.print_height();
   assert(tree1.insert(16, t_rid) == 0);
   assert(tree1.insert(17, t_rid) == 0);
   assert(tree1.insert(18, t_rid) == 0);
   assert(tree1.insert(19, t_rid) == 0);
   assert(tree1.insert(20, t_rid) == 0);
   tree1.print_height();
+  //tree1.printTree();
 
   tree1.close();
 
