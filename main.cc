@@ -112,6 +112,7 @@ int main()
   */
 
   /* Test Cases for n = 6 */
+  /*
   RecordId rid;
   rid.pid = 14;
   rid.sid = 15;
@@ -225,6 +226,7 @@ int main()
   assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
 
+  */
   /*
   PageId pid2 = 0;
   PageFile pf2;
@@ -440,7 +442,7 @@ int main()
   assert(tree1.insert(19, t_rid) == 0);
   assert(tree1.insert(20, t_rid) == 0);
   tree1.print_height();
-  //tree1.printTree();
+  tree1.printTree();
 
   tree1.close();
 
