@@ -173,3 +173,67 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     return 0;
     */
 }
+  RC BTreeIndex::printTree()
+  {
+    /*
+    char buffer[1024];
+    RC ret = pf.read(0, buffer);
+    TreeMeta tm;
+    memcpy(&tm, buffer, sizeof(struct TreeMeta));
+
+  */
+    if(treeHeight >=1)
+    {
+      //call printTreeRecursive on the root node
+      printTreeRecursive(1, 1);
+      return 0;
+    }
+    else
+    {
+      cout<<"Unable to print when treeHeight < 1!"<<endl;
+      return 1;
+    }
+
+  }
+
+  RC BTreeIndex::printTreeRecursive(int pid, int cur_height)
+  {
+    char buffer[1024];
+    RC ret;
+
+    //base case
+    if(cur_height == treeHeight)
+    {
+      BTLeafNode leafNode;
+      ret = leafNode.read(pid, pf);
+      leafNode.print_buffer();
+      return ret;
+    }
+
+    //not at maxHeight level => must be a nonLeafNode
+
+    //print current
+    BTNonLeafNode nonLeafNode;
+    ret = nonLeafNode.read(pid, pf);
+    if(ret != 0)
+    {
+      cout<<"Unable to load NonLeafNode with pid "<<pid<<endl;
+    }
+    nonLeafNode.print_buffer();
+
+    NonLeafNodeElement nextNonLeafNode;
+    for(int i = 0; i < nonLeafNode.getKeyCount(); i++)
+    {
+      nextNonLeafNode = nonLeafNode.get_element(i);
+      printTreeRecursive(nextNonLeafNode.pid, cur_height+1);
+    }
+    PageId rightmost_pid = -1;
+    nonLeafNode.get_rightmost_child_ptr(rightmost_pid);
+    if(rightmost_pid>0)
+    {
+      printTreeRecursive(rightmost_pid, cur_height+1);
+    }
+
+    cout<<"Printed out complete tree"<<endl;
+
+  }

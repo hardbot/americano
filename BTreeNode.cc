@@ -584,10 +584,13 @@ NonLeafNodeElement BTNonLeafNode::get_element(int eid)
 
 }
 
-
 void BTNonLeafNode::set_element(NonLeafNodeElement nlfe, int eid)
 {
   int element_size = sizeof(struct NonLeafNodeElement);
   memcpy(buffer+8+(eid*element_size),&nlfe,element_size);
 }
 
+RC BTNonLeafNode::get_rightmost_child_ptr(PageId& pid)
+{
+  memcpy(&pid, buffer+4, sizeof(int));
+}
