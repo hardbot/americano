@@ -42,6 +42,7 @@ class BTreeIndex {
   BTreeIndex();
 
   RC init();
+  RC setMeta();
   //RC setNonLeaf;
   RC getLeaf(PageId pid, BTLeafNode &lf);
   RC getNonLeaf(PageId pid, BTNonLeafNode &nlf);
@@ -59,8 +60,9 @@ class BTreeIndex {
    * @return error code. 0 if no error
    */
   RC close();
+  void print_height();
 
-  RC insert_rec(int cur_height, PageId pid, int key, const RecordId& rid);
+  RC insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key);
     
   /**
    * Insert (key, RecordId) pair to the index.

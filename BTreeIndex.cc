@@ -9,6 +9,7 @@
  
 #include "BTreeIndex.h"
 #include "BTreeNode.h"
+#include <iostream>
 
 using namespace std;
 
@@ -56,7 +57,16 @@ RC BTreeIndex::init()
   tm.height = treeHeight = 1;
   memcpy(buffer, &tm, sizeof(struct TreeMeta));
   pf.write(0, buffer);
+}
 
+RC BTreeIndex::setMeta()
+{
+  char buffer[1024];
+  TreeMeta tm;
+  tm.root = rootPid;
+  tm.height = treeHeight;
+  memcpy(buffer, &tm, sizeof(struct TreeMeta));
+  pf.write(0, buffer);
 }
 
 RC BTreeIndex::getLeaf(PageId pid, BTLeafNode &lf)
@@ -84,28 +94,104 @@ RC BTreeIndex::close()
     return pf.close();
 }
 
-RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid)
+// insert rec error codes:
+// 1 = propogate
+// 0 = success
+// < 0 = error
+RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key)
 {
-  int child_pid;
-  BTLeafNode leaf;
-  BTNonLeafNode non_leaf;
+  int child_pid, propagate = -1; 
+  BTLeafNode leaf, sibling;
+  BTNonLeafNode non_leaf, non_leaf_sibling;
 
-  // End case if reached leaf
-  if (cur_height == treeHeight)
+  // At level above tree
+  if (cur_height == 0)
   {
+    // Recurse
+    propagate = insert_rec(cur_height+1, pid, key, rid, sibling_pid, sibling_key);
+
+    // Propogate key up to root
+    if (propagate == 1)
+    {
+      cout << "propagate" << endl;
+      // Set new root and meta
+      rootPid = pf.endPid();
+      treeHeight++;
+      setMeta();
+
+      // Initialize new root
+      getNonLeaf(rootPid, non_leaf);
+      non_leaf.initializeRoot(pid, sibling_key, sibling_pid);
+      non_leaf.write(rootPid, pf);
+    }
+  }
+  // End case if reached leaf
+  else if (cur_height == treeHeight)
+  {
+    // Get leaf at pid
     getLeaf(pid, leaf);
-    if ( leaf.insert(key, rid) )
+
+    // Split keys if overflow 
+    if ( leaf.insert(key, rid) != 0)
+    {
+      // Split up keys
+      // sibling_key set to first key of sibling
+      leaf.insertAndSplit(key, rid, sibling, sibling_key);
+      // Write update leaf
+      leaf.write(pid, pf);
+      // Write new sibling
+      sibling_pid = pf.endPid();
+      sibling.write(pf.endPid(), pf);
+
       return 1;
+    }
+
+    // Write leaf if no overflow
     leaf.write(pid, pf);
   }
   // Look through nonleaf nodes for key
   else
   {
+    // Get non leaf at pid
     getNonLeaf(pid, non_leaf);
+
+    // Get pid to travel to in child_pid
     non_leaf.locateChildPtr(key, child_pid);
-    insert_rec(cur_height+1, child_pid, key, rid);
+
+    // Recurse to next height with child_pid
+    propagate = insert_rec(cur_height+1, child_pid, key, rid, sibling_pid, sibling_key);
+    // Propagate sibling keys up
+    if (propagate == 1)
+    {
+      // Check if keys are valid
+      //if (sibling_key == -1 || sibling_pid == -1)
+        //return -1;
+      
+      // At some non leaf node
+      if (non_leaf.insert(sibling_key, sibling_pid) != 0)
+      {
+        // Split up keys
+        // Sibling_key set to mid key from non_leaf
+        non_leaf.insertAndSplit(key, pid, non_leaf_sibling, sibling_key);
+        // Write updated non leaf
+        non_leaf.write(pid, pf);
+        // Write new non leaf sibling
+        sibling_pid = pf.endPid();
+        non_leaf_sibling.write(pf.endPid(),pf);
+
+        return 1;
+      }
+      // Write non leaf if no overflow
+      non_leaf.write(sibling_pid, pf);
+    }
   }
+
   return 0;
+}
+
+void BTreeIndex::print_height()
+{
+  cout << "Tree Height: " << treeHeight << endl;
 }
 
 /*
@@ -117,7 +203,9 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
     // Assume Tree is initialized
-    return insert_rec(1, rootPid, key, rid);
+    PageId pid = -1;
+    int sibling_key = -1;
+    return insert_rec(0, rootPid, key, rid, pid, sibling_key);
 }
 
 /*

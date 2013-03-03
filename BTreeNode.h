@@ -15,7 +15,7 @@
 
 #include <iostream>
 using namespace std;
-#define MAX_NUM_POINTERS 6
+#define MAX_NUM_POINTERS 4
 
 struct LeafNodeElement
 {
@@ -35,7 +35,8 @@ struct NonLeafNodeElement
 class BTLeafNode {
   public:
     BTLeafNode()
-    {}
+    {
+    }
 
    /**
     * Insert the (key, rid) pair to the node.

@@ -63,13 +63,14 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
     return 1;
   // Check for duplicates;
 
-  if (locate(key,eid) == 0 && (get_element(eid)).key == key)
-    return 1;
+  //if (locate(key,eid) == 0 && (get_element(eid)).key == key)
+    //return 1;
 
   // Set element to insert
   element.rec_id.pid = rid.pid;
   element.rec_id.sid = rid.sid;
   element.key = key;
+  num_elements = getKeyCount();
   set_element(element, num_elements);
 
   // Bubble Sort 
@@ -296,14 +297,14 @@ LeafNodeElement BTLeafNode::get_element(int eid)
 {
   LeafNodeElement lfe;
   int element_size = sizeof(struct LeafNodeElement);
-  memcpy(&lfe,buffer+8+(eid*element_size),element_size);
+  memcpy(&lfe,buffer+8+(eid * element_size),element_size);
   return lfe;
 }
 
 void BTLeafNode::set_element(LeafNodeElement lfe, int eid)
 {
   int element_size = sizeof(struct LeafNodeElement);
-  memcpy(buffer+8+(eid*element_size),&lfe,element_size);
+  memcpy(buffer+8+(eid * element_size),&lfe, element_size);
 }
 
 /*
@@ -387,7 +388,6 @@ RC BTNonLeafNode::insert(int key, PageId pid)
       left_element.key = temp.key;
       left_element.pid = temp.pid;
 
-
       // Write swap to buffer
       set_element(left_element, i-1);
       set_element(right_element, i);
@@ -399,6 +399,7 @@ RC BTNonLeafNode::insert(int key, PageId pid)
 
   }
   // Iterate size
+  num_elements = getKeyCount();
   num_elements++;
   memcpy(buffer, &num_elements, sizeof(int));
 
@@ -471,13 +472,13 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   memcpy(buffer, &num_elements, sizeof(int));//element_size);
 
   // Insert into current node
-  for (int i = 0; i < half; i++)
+  for (int i = 0; i < half-1; i++)
   {
     insert(overflow[i].key, overflow[i].pid);
   }
-  memcpy(&num_elements, buffer, sizeof(int));
-  num_elements--;
-  memcpy(buffer, &num_elements, sizeof(int));
+  //memcpy(&num_elements, buffer, sizeof(int));
+  //num_elements = getKeyCount() - 1;
+  //memcpy(buffer, &num_elements, sizeof(int));
 
   // Insert into sibling node
   for (int i = half; i < num_overflow; i++)
@@ -548,7 +549,6 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
     // Equal
     else
     {
-
       pid = get_element(mid+1).pid;
       return 0;
     }

@@ -112,7 +112,7 @@ int main()
   */
 
   /* Test Cases for n = 6 */
-  
+ /* 
   RecordId rid;
   rid.pid = 14;
   rid.sid = 15;
@@ -249,7 +249,6 @@ int main()
   assert(nonleaf.insert(8,pid2) == 1);
 
   nonleaf.write(pid2, pf2);
-/*
   PageId pid3 = 0;
   PageFile pf3;
   pf3.open("temp3.tbl", 'w');
@@ -265,7 +264,6 @@ int main()
 
   assert(nonleaf2.insert(-1, pid3)==1);
   assert(nonleaf2.insert(5, pid3)==1);
-*/
 
 
   //PageId pid3 = 0;
@@ -375,7 +373,6 @@ int main()
 
 
 
-  /*
   int pageid = -1;
   assert(nonleaf3.locateChildPtr(1,pageid) == 1);
   assert(pageid == -1);
@@ -411,7 +408,6 @@ int main()
 
 */
 
-
   // Test cases for BTreeIndex Insert
   BTreeIndex tree1;
   RecordId t_rid;
@@ -420,16 +416,31 @@ int main()
   tree1.open("pf.test", 'w');
 
   //tree1.init();
+  tree1.print_height();
   assert(tree1.insert(1, t_rid) == 0);
   assert(tree1.insert(2, t_rid) == 0);
   assert(tree1.insert(3, t_rid) == 0);
   assert(tree1.insert(4, t_rid) == 0);
   assert(tree1.insert(5, t_rid) == 0);
-  assert(tree1.insert(6, t_rid) == 1);
-  assert(tree1.insert(7, t_rid) == 1);
-  assert(tree1.insert(8, t_rid) == 1);
-  assert(tree1.insert(9, t_rid) == 1);
-  assert(tree1.insert(10, t_rid) == 1);
+  tree1.print_height();
+  assert(tree1.insert(6, t_rid) == 0);
+  assert(tree1.insert(7, t_rid) == 0);
+  assert(tree1.insert(8, t_rid) == 0);
+  assert(tree1.insert(9, t_rid) == 0);
+  assert(tree1.insert(10, t_rid) == 0);
+  tree1.print_height();
+  assert(tree1.insert(11, t_rid) == 0);
+  assert(tree1.insert(12, t_rid) == 0);
+  assert(tree1.insert(13, t_rid) == 0);
+  assert(tree1.insert(14, t_rid) == 0);
+  tree1.print_height();
+  assert(tree1.insert(15, t_rid) == 0);
+  assert(tree1.insert(16, t_rid) == 0);
+  assert(tree1.insert(17, t_rid) == 0);
+  assert(tree1.insert(18, t_rid) == 0);
+  assert(tree1.insert(19, t_rid) == 0);
+  assert(tree1.insert(20, t_rid) == 0);
+  tree1.print_height();
 
   tree1.close();
 
