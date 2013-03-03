@@ -244,6 +244,7 @@ int main()
   assert(nonleaf.insert(3,pid2) == 0);
   assert(nonleaf.insert(9,pid2) == 0);
   assert(nonleaf.insert(2,pid2) == 0);
+  nonleaf.print_buffer();
   assert(nonleaf.insert(6,pid2) == 1);
   assert(nonleaf.insert(7,pid2) == 1);
   assert(nonleaf.insert(8,pid2) == 1);

@@ -10,3 +10,12 @@ Email: roberttn@ucla.edu
 Project 2A Submission
 
 Used a simple while loop that took input line by line and parsed the string into key and value tuples to be placed in a RecordFile.
+
+
+Project 2B Submission
+
+Implemented BTLeafNode such that the number of elements in the node is listed in the first four bytes of the buffer. The following four bytes is a pointer to the next leaf node. All bytes after that are structs of elements with rid and key.
+
+Implemented BTNonLeafNode such that the number of elements in the node is listed in the first four bytes and the following four bytes is a pointer to the rightmost child.
+
+In locate and locateChildPtr, we used binary search instead of a linear search to be more efficient.

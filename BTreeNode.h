@@ -36,6 +36,10 @@ class BTLeafNode {
   public:
     BTLeafNode()
     {
+      int initial_size_value = -1;
+      int initial_next_node_ptr_value = -1;
+      memcpy(buffer, &initial_size_value, sizeof(int));
+      memcpy(buffer+4, &initial_next_node_ptr_value, sizeof(int));
     }
 
    /**
@@ -122,13 +126,12 @@ class BTLeafNode {
       int element_size = sizeof(struct LeafNodeElement);
       LeafNodeElement lfe;
       memcpy(&size,buffer,sizeof(int));
-      cout << "Size: " << size << endl;
+      cout << "Printing LeafNode of Size: " << size << endl;
       for (int i = 0; i < size; i++)
       {
         lfe = get_element(i);
-        cout << "Element " << i << ": " << endl;
-        cout << "sid: " << lfe.rec_id.sid << " | pid: " << lfe.rec_id.pid
-             << "  | key: " << lfe.key << endl;
+        cout << "| sid: " << lfe.rec_id.sid << " | pid: " << lfe.rec_id.pid
+             << "  | key: " << lfe.key<<" ";
       }
       cout << endl;
     }
@@ -154,6 +157,14 @@ class BTLeafNode {
  */
 class BTNonLeafNode {
   public:
+    BTNonLeafNode()
+    {
+      int initial_size_value = -1;
+      int initial_rightmost_node_ptr_value = -1;
+      memcpy(buffer, &initial_size_value, sizeof(int));
+      memcpy(buffer+4, &initial_rightmost_node_ptr_value, sizeof(int));
+    }
+
    /**
     * Insert a (key, pid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.
@@ -221,6 +232,24 @@ class BTNonLeafNode {
 
     NonLeafNodeElement get_element(int eid);
     void set_element(NonLeafNodeElement nlfe, int eid);
+
+
+    RC get_rightmost_child_ptr(PageId& pid);
+
+    void print_buffer()
+    {
+      int size;
+      int element_size = sizeof(struct NonLeafNodeElement);
+      NonLeafNodeElement nlfe;
+      memcpy(&size,buffer,sizeof(int));
+      cout << "Printing NonLeafNode of Size: " << size << endl;
+      for (int i = 0; i < size; i++)
+      {
+        nlfe = get_element(i);
+        cout << "| pid: " << nlfe.pid << "  | key: " << nlfe.key << " ";
+      }
+      cout << endl;
+    }
 
 
   private:
