@@ -233,6 +233,7 @@ class BTNonLeafNode {
     NonLeafNodeElement get_element(int eid);
     void set_element(NonLeafNodeElement nlfe, int eid);
 
+
     RC get_rightmost_child_ptr(PageId& pid);
 
     void print_buffer()
