@@ -249,7 +249,7 @@ int main()
   assert(nonleaf.insert(3,pid2) == 0);
   assert(nonleaf.insert(9,pid2) == 0);
   assert(nonleaf.insert(2,pid2) == 0);
-  nonleaf.print_buffer();
+  //nonleaf.print_buffer();
   assert(nonleaf.insert(6,pid2) == 1);
   assert(nonleaf.insert(7,pid2) == 1);
   assert(nonleaf.insert(8,pid2) == 1);
@@ -308,7 +308,7 @@ int main()
   //checking if can locate rightmost child ptr
   assert(nonleaf3.insert(1, 5)==0);
   assert(nonleaf3.locateChildPtr(1, pageid)==0);
- cout<<"Value of pageid: "<<pageid<<endl;
+  //cout<<"Value of pageid: "<<pageid<<endl;
   assert(pageid==5);
 
   //check for leftmostpointer
@@ -457,23 +457,33 @@ int main()
   lfn2.read(0,pf4);
   lfn3.read(0,pf4);
 
-  nonLeafNode.print_buffer();
+  //nonLeafNode.print_buffer();
   //nln2.print_buffer();
   //nln3.print_buffer();
-  leafNode.print_buffer();
+  //leafNode.print_buffer();
   //lfn2.print_buffer();
   //lfn3.print_buffer();
 
   //tree1.print_height();
   //tree1.printTree();
-  tree1.print_height();
+  //tree1.print_height();
 
-  tree1.locate(20, cursor);
-  tree1.printIndex(cursor);
+  tree1.locate(1, cursor);
+  //tree1.printIndex(cursor);
+  int keypf4;
+  RecordId ridpf4;
+
+  /*
+  for (int i = 0; i < 19; i++)
+  {
+    tree1.readForward(cursor, keypf4, ridpf4);
+    tree1.printIndex(cursor);
+  }
+  */
 
   tree1.close();
 
-  cout << "Passed all test casses for BTreeIndex insert!" << endl;
+  cout << "Passed all test cases for BTreeIndex insert!" << endl;
 
   return 0;
 }

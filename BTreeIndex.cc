@@ -36,19 +36,6 @@ RC BTreeIndex::open(const string& indexname, char mode)
     return ret;
 }
 
-/*
-RC BTreeIndex::printTree(int cur_height, int pid)
-{
-  if (cur_height == treeHeight)
-  {
-    getLeaf(pid).print_buffer();
-  }
-  else
-  {
-  }
-}
-*/
-
 RC BTreeIndex::init()
 {
   char buffer[1024];
@@ -114,7 +101,6 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     // Propogate key up to root
     if (propagate == 1)
     {
-      //cout << "Created New Root" << endl;
       // Set new root and meta
       end_pid = pf.endPid();
       rootPid = end_pid;
@@ -122,12 +108,9 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       setMeta();
 
       // Initialize new root
-      //getNonLeaf(rootPid, non_leaf);
       non_leaf.initializeRoot(pid, sibling_key, sibling_pid);
       non_leaf.write(end_pid, pf);
-      //non_leaf.print_buffer();
     }
-    cout << "RootPid: " << rootPid <<endl;
   }
   // End case if reached leaf
   else if (cur_height == treeHeight)
@@ -135,40 +118,26 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     // Get leaf at pid
     getLeaf(pid, leaf);
     end_pid = pf.endPid();
-    //cout << "Added to leaf" << endl;
-    //cout << "Pid: " << pid << endl;
 
-    //leaf.print_buffer();
-
-    //cout << "Hello" << endl;
     // Split keys if overflow 
     if ( leaf.insert(key, rid) != 0)
     {
-      //cout << "World" << endl;
       // Split up keys
       // sibling_key set to first key of sibling
-      //leaf.read(pid, pf);
-      //sibling.read(end_pid, pf);
-      //sibling_key = -1;
       leaf.insertAndSplit(key, rid, sibling, sibling_key);
-      //cout << "sibling_key: " << sibling_key << endl;
       leaf.setNextNodePtr(end_pid);
       // Write update leaf
       leaf.write(pid, pf);
       // Write new sibling
       sibling_pid = end_pid;
       sibling.write(end_pid, pf);
-      //cout << "end_pid: " << end_pid << endl;
-      //cout << "Just Splitted" << endl;
-      //leaf.print_buffer();
-      //sibling.print_buffer();
 
       return 1;
     }
 
-    leaf.print_buffer();
     // Write leaf if no overflow
     leaf.write(pid, pf);
+
     return 0;
   }
   // Look through nonleaf nodes for key
@@ -179,10 +148,7 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     end_pid = pf.endPid();
 
     // Get pid to travel to in child_pid
-      //cout << "PROP" << endl;
     non_leaf.locateChildPtr(key, child_pid);
-    //non_leaf.print_buffer();
-    //cout << "Child_pid: " << child_pid << endl;
 
     // Recurse to next height with child_pid
     propagate = insert_rec(cur_height+1, child_pid, key, rid, sibling_pid, sibling_key);
@@ -194,32 +160,27 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         //return -1;
       
       // At some non leaf node
-      //cout << "PROP" << endl;
       if (non_leaf.insert(sibling_key, sibling_pid) != 0)
       {
         non_leaf.print_buffer();
         // Split up keys
         // Sibling_key set to mid key from non_leaf
         non_leaf.insertAndSplit(key, pid, non_leaf_sibling, sibling_key);
+
         // Write updated non leaf
         non_leaf.write(pid, pf);
+
         // Write new non leaf sibling
         sibling_pid = pf.endPid();
         non_leaf_sibling.write(pf.endPid(),pf);
-        non_leaf.print_buffer();
-        non_leaf_sibling.print_buffer();
 
         return 1;
       }
-      //non_leaf.print_buffer();
+
       // Write non leaf if no overflow
       non_leaf.write(pid, pf);
-      return 0;
     }
-    else
-    {
-      return 0;
-    }
+
   }
 
   return 0;
@@ -291,12 +252,6 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     return locate_rec(1, rootPid, searchKey, cursor);
 }
 
-int BTreeIndex::locateRecursive(int SearchKey, int cur_height, PageId pid)
-{
-
-
-}
-
 /*
  * Read the (key, rid) pair at the location specified by the index cursor,
  * and move foward the cursor to the next entry.
@@ -309,6 +264,7 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 {
     // Initalize
     BTLeafNode lf;
+    getLeaf(cursor.pid, lf);
 
     // See if eid is in current leaf node
     if (lf.getKeyCount() <= cursor.eid)
@@ -320,9 +276,12 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
       cursor.eid = 0;
       getLeaf(cursor.pid, lf);
     }
+    // Set output values
     key = (lf.get_element(cursor.eid)).key;
     rid = (lf.get_element(cursor.eid)).rec_id;
-    cursor.eid++;
+
+    // Iterate eid to go to to next element
+    cursor.eid += 1;
     return 0;
 }
 
@@ -342,70 +301,3 @@ RC BTreeIndex::printIndex(IndexCursor ic)
   cout << "Sid: " << rid.sid << endl;
 
 }
-
-  RC BTreeIndex::printTree()
-  {
-    /*
-    char buffer[1024];
-    RC ret = pf.read(0, buffer);
-    TreeMeta tm;
-    memcpy(&tm, buffer, sizeof(struct TreeMeta));
-
-  */
-    if(treeHeight >=1)
-    {
-      //call printTreeRecursive on the root node
-      printTreeRecursive(1, 1);
-      return 0;
-    }
-    else
-    {
-      cout<<"Unable to print when treeHeight < 1!"<<endl;
-      return 1;
-    }
-
-  }
-
-  RC BTreeIndex::printTreeRecursive(int pid, int cur_height)
-  {
-    char buffer[1024];
-    RC ret;
-
-    //base case
-    if(cur_height == treeHeight)
-    {
-      BTLeafNode leafNode;
-      ret = leafNode.read(pid, pf);
-      leafNode.print_buffer();
-      return ret;
-    }
-
-    //not at maxHeight level => must be a nonLeafNode
-
-    /*
-    //print current
-    BTNonLeafNode nonLeafNode;
-    ret = nonLeafNode.read(pid, pf);
-    if(ret != 0)
-    {
-      cout<<"Unable to load NonLeafNode with pid "<<pid<<endl;
-    }
-    nonLeafNode.print_buffer();
-
-    NonLeafNodeElement nextNonLeafNode;
-    for(int i = 0; i < nonLeafNode.getKeyCount(); i++)
-    {
-      nextNonLeafNode = nonLeafNode.get_element(i);
-      printTreeRecursive(nextNonLeafNode.pid, cur_height+1);
-    }
-    PageId rightmost_pid = -1;
-    nonLeafNode.get_rightmost_child_ptr(rightmost_pid);
-    if(rightmost_pid>0)
-    {
-      printTreeRecursive(rightmost_pid, cur_height+1);
-    }
-
-    cout<<"Printed out complete tree"<<endl;
-    */
-
-  }

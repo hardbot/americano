@@ -41,11 +41,18 @@ class BTreeIndex {
  public:
   BTreeIndex();
 
+  // Helper Functions
   RC init();
   RC setMeta();
-  //RC setNonLeaf;
   RC getLeaf(PageId pid, BTLeafNode &lf);
   RC getNonLeaf(PageId pid, BTNonLeafNode &nlf);
+
+  // Print Debugging Helper Functions
+  void print_height();
+  RC printTree();
+  RC printTreeRecursive(int pid, int cur_height);
+  RC printIndex(IndexCursor ic);
+
   /**
    * Open the index file in read or write mode.
    * Under 'w' mode, the index file should be created if it does not exist.
@@ -60,16 +67,14 @@ class BTreeIndex {
    * @return error code. 0 if no error
    */
   RC close();
-  void print_height();
-
-  RC insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key);
-    
+  
   /**
    * Insert (key, RecordId) pair to the index.
    * @param key[IN] the key for the value inserted into the index
    * @param rid[IN] the RecordId for the record being inserted into the index
    * @return error code. 0 if no error
    */
+  RC insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key);
   RC insert(int key, const RecordId& rid);
 
   /**
@@ -104,14 +109,6 @@ class BTreeIndex {
    * @return error code. 0 if no error
    */
   RC readForward(IndexCursor& cursor, int& key, RecordId& rid);
-
-  RC printTree();
-  RC printTreeRecursive(int pid, int cur_height);
-  RC printIndex(IndexCursor ic);
-  
-
-  int locateRecursive(int SearchKey, int cur_height, PageId pid);
-
 
  private:
   PageFile pf;         /// the PageFile used to store the actual b+tree in disk

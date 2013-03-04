@@ -19,3 +19,8 @@ Implemented BTLeafNode such that the number of elements in the node is listed in
 Implemented BTNonLeafNode such that the number of elements in the node is listed in the first four bytes and the following four bytes is a pointer to the rightmost child.
 
 In locate and locateChildPtr, we used binary search instead of a linear search to be more efficient.
+
+Project 2C Submission
+Implemented BTIndexTree 
+
+Reimplemented BTNonLeafNode to store the left most child pointer within the first 8 bytes isntead of the right most child pointer.  Due to this we needed to reimplement locate and insertandsplit functions.
