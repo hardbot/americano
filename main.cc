@@ -441,8 +441,13 @@ int main()
   assert(tree1.insert(19, t_rid) == 0);
   tree1.print_height();
   assert(tree1.insert(20, t_rid) == 0);
+  BTNonLeafNode nonLeafNode; 
+  PageFile pf2;
+  pf2.open("pf.test", 'r');
+  nonLeafNode.read(1, pf2);
+  nonLeafNode.print_buffer();
   tree1.print_height();
-  tree1.printTree();
+ //tree1.printTree();
 
   tree1.close();
 

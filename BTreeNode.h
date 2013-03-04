@@ -15,7 +15,7 @@
 
 #include <iostream>
 using namespace std;
-#define MAX_NUM_POINTERS 9
+#define MAX_NUM_POINTERS 6
 
 struct LeafNodeElement
 {
