@@ -228,12 +228,9 @@ int main()
   assert(sibling_key == 4);
   //assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
+  }
 
   /*
-=======
-  
-  //Testing NonLeafNode
->>>>>>> 3c6f1244a2eb2007bb78ee716580b699ea78f6c4
   PageId pid2 = 0;
   PageFile pf2;
   pf2.open("temp2.tbl", 'w');
@@ -257,7 +254,7 @@ int main()
   assert(nonleaf.insert(7,pid2) == 1);
   assert(nonleaf.insert(8,pid2) == 1);
   nonleaf.write(pid2, pf2);
-
+*/
 /*
   PageId pid3 = 0;
   PageFile pf3;
@@ -276,6 +273,7 @@ int main()
  // assert(nonleaf2.insert(5, pid3)==1);
 
 */
+  /*
   PageId pid3 = 0;
   PageFile pf3;
   pf3.open("temp3.tbl", 'w');
@@ -385,7 +383,7 @@ int main()
   //cout<<"Number of elements in sibling 1: "<<nonleaf4.getKeyCount()<<endl;
   //cout<<"Number of elements in sibling 2: "<<siblingn.getKeyCount()<<endl;
   cout<<"Passed all test cases for BTNonLeafNode insertAndSplit!\n";
-
+*/
 
 
 /*
@@ -496,3 +494,4 @@ int main()
 
   return 0;
 }
+
