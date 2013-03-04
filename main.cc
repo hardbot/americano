@@ -423,7 +423,6 @@ int main()
   assert(tree1.insert(3, t_rid) == 0);
   assert(tree1.insert(4, t_rid) == 0);
   assert(tree1.insert(5, t_rid) == 0);
-  tree1.print_height();
   assert(tree1.insert(6, t_rid) == 0);
   assert(tree1.insert(7, t_rid) == 0);
   assert(tree1.insert(8, t_rid) == 0);
@@ -440,6 +439,7 @@ int main()
   assert(tree1.insert(17, t_rid) == 0);
   assert(tree1.insert(18, t_rid) == 0);
   assert(tree1.insert(19, t_rid) == 0);
+  tree1.print_height();
   assert(tree1.insert(20, t_rid) == 0);
   tree1.print_height();
   tree1.printTree();

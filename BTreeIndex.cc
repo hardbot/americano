@@ -147,6 +147,7 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
 
     // Write leaf if no overflow
     leaf.write(pid, pf);
+    return 0;
   }
   // Look through nonleaf nodes for key
   else
@@ -182,6 +183,11 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       }
       // Write non leaf if no overflow
       non_leaf.write(sibling_pid, pf);
+      return 0;
+    }
+    else
+    {
+      return 0;
     }
   }
 
@@ -299,6 +305,7 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 
     //not at maxHeight level => must be a nonLeafNode
 
+    /*
     //print current
     BTNonLeafNode nonLeafNode;
     ret = nonLeafNode.read(pid, pf);
@@ -322,5 +329,6 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     }
 
     cout<<"Printed out complete tree"<<endl;
+    */
 
   }
