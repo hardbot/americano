@@ -228,7 +228,7 @@ int main()
   assert(sibling_key == 4);
   //assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
-  
+  } 
 
   
   PageId pid2 = 0;
@@ -483,9 +483,8 @@ int main()
 
   tree1.close();
 
-  cout << "Passed all test cases for BTreeIndex insert!" << endl;
+  cout << "Passed all test casses for BTreeIndex insert!" << endl;
 
   return 0;
-}
 }
 
