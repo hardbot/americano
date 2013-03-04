@@ -228,9 +228,9 @@ int main()
   assert(sibling_key == 4);
   //assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
-  }
+  
 
-  /*
+  
   PageId pid2 = 0;
   PageFile pf2;
   pf2.open("temp2.tbl", 'w');
@@ -254,26 +254,8 @@ int main()
   assert(nonleaf.insert(7,pid2) == 1);
   assert(nonleaf.insert(8,pid2) == 1);
   nonleaf.write(pid2, pf2);
-*/
-/*
-  PageId pid3 = 0;
-  PageFile pf3;
-  pf3.open("temp3.tbl", 'w');
 
-  BTNonLeafNode nonleaf2;
-  char* nonleafbuffer2;
-  nonleafbuffer2 = (char*) malloc(1024);
-
-  int i3 = 0;
-  memcpy(nonleafbuffer, &i3, sizeof(int));
-  pf3.write(0, nonleafbuffer2);
-  nonleaf2.read(pid3, pf3);
-
-  assert(nonleaf2.insert(-1, pid3)==1);
- // assert(nonleaf2.insert(5, pid3)==1);
-
-*/
-  /*
+  
   PageId pid3 = 0;
   PageFile pf3;
   pf3.open("temp3.tbl", 'w');
@@ -307,7 +289,7 @@ int main()
 
   BTNonLeafNode nonleaf3;
   char * nonleafbuffer3 = (char *) malloc(1024);
-  int rightmost_child_ptr = 100;
+  int rightmost_child_ptr = 1;
   memcpy(nonleafbuffer3+4, &rightmost_child_ptr, sizeof(int));
   i = 0;
   //enter size in buffer
@@ -326,30 +308,30 @@ int main()
   //checking if can locate rightmost child ptr
   assert(nonleaf3.insert(1, 5)==0);
   assert(nonleaf3.locateChildPtr(1, pageid)==0);
- // cout<<"Value of pageid: "<<pageid<<endl;
-  assert(pageid==100);
+ cout<<"Value of pageid: "<<pageid<<endl;
+  assert(pageid==5);
 
   //check for leftmostpointer
   assert(nonleaf3.insert(3, 7)==0);
   assert(nonleaf3.locateChildPtr(0, pageid)==0);
-  assert(pageid==5);
+  assert(pageid==1);
 
   //check for in between 1 and 3
   assert(nonleaf3.locateChildPtr(2, pageid)==0);
-  assert(pageid==7);
+  assert(pageid==5);
   assert(nonleaf3.locateChildPtr(3, pageid)==0);
-  assert(pageid==100);
+  assert(pageid==7);
   assert(nonleaf3.locateChildPtr(5, pageid)==0);
-  assert(pageid==100);
+  assert(pageid==7);
 
   //check for 
   assert(nonleaf3.insert(7, 9)==0);
   assert(nonleaf3.locateChildPtr(5, pageid)==0);
-  assert(pageid==9);
+  assert(pageid==7);
   assert(nonleaf3.locateChildPtr(10, pageid)==0);
-  assert(pageid==100);
+  assert(pageid==9);
   assert(nonleaf3.locateChildPtr(-1, pageid)==1);
-  assert(pageid==100);
+  assert(pageid==9);
   cout<<"Passed all test cases for BTNonLeafNode locateChildPtr!"<<endl;
 
 
@@ -383,7 +365,7 @@ int main()
   //cout<<"Number of elements in sibling 1: "<<nonleaf4.getKeyCount()<<endl;
   //cout<<"Number of elements in sibling 2: "<<siblingn.getKeyCount()<<endl;
   cout<<"Passed all test cases for BTNonLeafNode insertAndSplit!\n";
-*/
+
 
 
 /*
@@ -464,16 +446,16 @@ int main()
   */
   BTNonLeafNode nonLeafNode, nln2,nln3;
   BTLeafNode leafNode,lfn2,lfn3;
-  PageFile pf2;
-  pf2.open("pf.test", 'r');
+  PageFile pf4;
+  pf4.open("pf.test", 'r');
   IndexCursor cursor;
 
-  nonLeafNode.read(3, pf2);
-  nln2.read(0,pf2);
-  nln3.read(0,pf2);
-  leafNode.read(4,pf2);
-  lfn2.read(0,pf2);
-  lfn3.read(0,pf2);
+  nonLeafNode.read(3, pf4);
+  nln2.read(0,pf4);
+  nln3.read(0,pf4);
+  leafNode.read(4,pf4);
+  lfn2.read(0,pf4);
+  lfn3.read(0,pf4);
   nonLeafNode.print_buffer();
   nln2.print_buffer();
   //nln3.print_buffer();
@@ -493,5 +475,6 @@ int main()
   cout << "Passed all test casses for BTreeIndex insert!" << endl;
 
   return 0;
+}
 }
 

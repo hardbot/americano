@@ -508,11 +508,12 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
   //assume buffer is sorted
   int num_elements = getKeyCount();
  // cout<<"locateChildPtr Key count: "<<num_elements<<endl;
-  int element_size = sizeof(struct NonLeafNodeElement);
+//  int element_size = sizeof(struct NonLeafNodeElement);
+/*
   int low = 0;
   int mid = 0;
   int high = num_elements - 1;
-
+*/
   int pid_to_return = 0;
 
 
@@ -521,6 +522,32 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
     return 1;
   if (num_elements <= 0)
     return 1;
+
+  if (searchKey < (get_element(0).key))
+  {
+    memcpy(&pid_to_return, buffer+4, sizeof(int));
+    pid = pid_to_return;
+    return 0;
+  }
+  //
+  for(int i = 1; i < num_elements; i++)
+  {
+    if(searchKey < (get_element(i).key))
+    {
+      pid = (get_element(i-1).pid);
+      return 0;
+    }
+  }
+  if(searchKey>= get_element(num_elements-1).key)
+  {
+    pid = get_element(num_elements-1).pid;
+    return 0;
+  }
+
+  return 1;
+
+
+  /*
   //if greater than largest value, set pid to rightmost child pointer stored in buffer+4
   //if (searchKey >= (get_element(num_elements-1).key))
   if (searchKey < (get_element(0).key))
@@ -568,7 +595,7 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
     }
   }
   return 1; 
-
+*/
 }
 
 /*

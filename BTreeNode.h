@@ -23,9 +23,10 @@ struct LeafNodeElement
     int key;
 };
 
+
 struct NonLeafNodeElement
 {
-  PageId pid;
+  PageId pid; //refers to a leaf node with key values >= key
   int key;
 };
 
