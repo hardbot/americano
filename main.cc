@@ -112,6 +112,8 @@ int main()
   */
 
   /* Test Cases for n = 6 */
+  if (MAX_NUM_POINTERS == 6)
+  {
   RecordId rid;
   rid.pid = 14;
   rid.sid = 15;
@@ -221,12 +223,13 @@ int main()
   int sibling_key = -1;
   assert(a.insertAndSplit(-1,rid, siblinga, sibling_key) == 1);
   assert(a.insertAndSplit(6,rid, siblinga, sibling_key) == 0);
-  a.print_buffer();
-  siblinga.print_buffer();
+  //a.print_buffer();
+  //siblinga.print_buffer();
   assert(sibling_key == 4);
-  assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
+  //assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
 
+  }
   /*
   PageId pid2 = 0;
   PageFile pf2;
@@ -424,12 +427,10 @@ int main()
   assert(tree1.insert(4, t_rid) == 0);
   assert(tree1.insert(5, t_rid) == 0);
   assert(tree1.insert(6, t_rid) == 0);
-  /*
   assert(tree1.insert(7, t_rid) == 0);
   assert(tree1.insert(8, t_rid) == 0);
   assert(tree1.insert(9, t_rid) == 0);
   assert(tree1.insert(10, t_rid) == 0);
-  //tree1.print_height();
   assert(tree1.insert(11, t_rid) == 0);
   assert(tree1.insert(12, t_rid) == 0);
   assert(tree1.insert(13, t_rid) == 0);
@@ -442,16 +443,40 @@ int main()
   assert(tree1.insert(19, t_rid) == 0);
   //tree1.print_height();
   assert(tree1.insert(20, t_rid) == 0);
+  /*
+  assert(tree1.insert(21, t_rid) == 0);
+  assert(tree1.insert(22, t_rid) == 0);
+  assert(tree1.insert(23, t_rid) == 0);
+  assert(tree1.insert(24, t_rid) == 0);
+  assert(tree1.insert(25, t_rid) == 0);
+  assert(tree1.insert(26, t_rid) == 0);
+  assert(tree1.insert(27, t_rid) == 0);
   */
-  BTLeafNode nonLeafNode; 
-  BTLeafNode leafNode;
+  BTNonLeafNode nonLeafNode, nln2,nln3;
+  BTLeafNode leafNode,lfn2,lfn3;
   PageFile pf2;
   pf2.open("pf.test", 'r');
+  IndexCursor cursor;
 
-  nonLeafNode.read(1, pf2);
+  nonLeafNode.read(3, pf2);
+  nln2.read(0,pf2);
+  nln3.read(0,pf2);
+  leafNode.read(4,pf2);
+  lfn2.read(0,pf2);
+  lfn3.read(0,pf2);
   nonLeafNode.print_buffer();
+  nln2.print_buffer();
+  //nln3.print_buffer();
+  leafNode.print_buffer();
+  //lfn2.print_buffer();
+  //lfn3.print_buffer();
+
   //tree1.print_height();
   //tree1.printTree();
+  tree1.print_height();
+
+  tree1.locate(4, cursor);
+  tree1.printIndex(cursor);
 
   tree1.close();
 

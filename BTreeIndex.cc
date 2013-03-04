@@ -71,7 +71,7 @@ RC BTreeIndex::setMeta()
 
 RC BTreeIndex::getLeaf(PageId pid, BTLeafNode &lf)
 {
-    char buffer[1024];
+    char buffer[pf.PAGE_SIZE];
     pf.read(pid, buffer);
     memcpy(&lf, buffer, sizeof(struct BTLeafNode));
     return 0;
@@ -79,7 +79,7 @@ RC BTreeIndex::getLeaf(PageId pid, BTLeafNode &lf)
 
 RC BTreeIndex::getNonLeaf(PageId pid, BTNonLeafNode &nlf)
 {
-    char buffer[1024];
+    char buffer[pf.PAGE_SIZE];
     pf.read(pid, buffer);
     memcpy(&nlf, buffer, sizeof(struct BTNonLeafNode));
     return 0;
@@ -101,7 +101,7 @@ RC BTreeIndex::close()
 RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key)
 {
   int child_pid, propagate = -1; 
-  int end_pid = pf.endPid();
+  int end_pid = 0;
   BTLeafNode leaf, sibling;
   BTNonLeafNode non_leaf, non_leaf_sibling;
 
@@ -114,39 +114,54 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     // Propogate key up to root
     if (propagate == 1)
     {
+      //cout << "Created New Root" << endl;
       // Set new root and meta
-      rootPid = pf.endPid();
+      end_pid = pf.endPid();
+      rootPid = end_pid;
       treeHeight++;
       setMeta();
 
       // Initialize new root
-      getNonLeaf(rootPid, non_leaf);
+      //getNonLeaf(rootPid, non_leaf);
       non_leaf.initializeRoot(pid, sibling_key, sibling_pid);
-      non_leaf.write(rootPid, pf);
+      non_leaf.write(end_pid, pf);
+      //non_leaf.print_buffer();
     }
+    cout << "RootPid: " << rootPid <<endl;
   }
   // End case if reached leaf
   else if (cur_height == treeHeight)
   {
     // Get leaf at pid
     getLeaf(pid, leaf);
+    end_pid = pf.endPid();
+    //cout << "Added to leaf" << endl;
+    //cout << "Pid: " << pid << endl;
 
-    cout << "Hello" << endl;
+    //leaf.print_buffer();
+
+    //cout << "Hello" << endl;
     // Split keys if overflow 
     if ( leaf.insert(key, rid) != 0)
     {
-      cout << "World" << endl;
+      //cout << "World" << endl;
       // Split up keys
       // sibling_key set to first key of sibling
-      sibling.read(end_pid, pf);
+      //leaf.read(pid, pf);
+      //sibling.read(end_pid, pf);
+      //sibling_key = -1;
       leaf.insertAndSplit(key, rid, sibling, sibling_key);
+      //cout << "sibling_key: " << sibling_key << endl;
+      leaf.setNextNodePtr(end_pid);
       // Write update leaf
       leaf.write(pid, pf);
       // Write new sibling
       sibling_pid = end_pid;
       sibling.write(end_pid, pf);
-      leaf.print_buffer();
-      sibling.print_buffer();
+      //cout << "end_pid: " << end_pid << endl;
+      //cout << "Just Splitted" << endl;
+      //leaf.print_buffer();
+      //sibling.print_buffer();
 
       return 1;
     }
@@ -160,9 +175,13 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
   {
     // Get non leaf at pid
     getNonLeaf(pid, non_leaf);
+    end_pid = pf.endPid();
 
     // Get pid to travel to in child_pid
+      //cout << "PROP" << endl;
     non_leaf.locateChildPtr(key, child_pid);
+    //non_leaf.print_buffer();
+    //cout << "Child_pid: " << child_pid << endl;
 
     // Recurse to next height with child_pid
     propagate = insert_rec(cur_height+1, child_pid, key, rid, sibling_pid, sibling_key);
@@ -174,8 +193,10 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         //return -1;
       
       // At some non leaf node
+      //cout << "PROP" << endl;
       if (non_leaf.insert(sibling_key, sibling_pid) != 0)
       {
+        non_leaf.print_buffer();
         // Split up keys
         // Sibling_key set to mid key from non_leaf
         non_leaf.insertAndSplit(key, pid, non_leaf_sibling, sibling_key);
@@ -184,11 +205,14 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         // Write new non leaf sibling
         sibling_pid = pf.endPid();
         non_leaf_sibling.write(pf.endPid(),pf);
+        non_leaf.print_buffer();
+        non_leaf_sibling.print_buffer();
 
         return 1;
       }
+      //non_leaf.print_buffer();
       // Write non leaf if no overflow
-      non_leaf.write(sibling_pid, pf);
+      non_leaf.write(pid, pf);
       return 0;
     }
     else
@@ -238,9 +262,32 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
  *                    with the key value.
  * @return error code. 0 if no error.
  */
+
+RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& cursor)
+{
+    BTLeafNode leaf;
+    BTNonLeafNode non_leaf;
+    int eid = 0, child_pid = 0;
+    if (cur_height == treeHeight)
+    {
+      getLeaf(pid, leaf);
+      leaf.locate(searchKey, eid);
+      cursor.pid = pid;
+      cursor.eid = eid;
+    }
+    else
+    {
+      getNonLeaf(pid, non_leaf);
+      non_leaf.locateChildPtr(searchKey, child_pid);
+
+      locate_rec(cur_height+1, child_pid, searchKey, cursor);
+    }
+    return 0;
+}
+
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
-    return 0;
+    return locate_rec(1, rootPid, searchKey, cursor);
 }
 
 /*
@@ -253,25 +300,42 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
  */
 RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 {
-  /*
     // Initalize
     BTLeafNode lf;
-    memcpy(lf,&pf+8+cursor.pid, ));
 
     // See if eid is in current leaf node
-    if (lf.getKeyCount() < cursor.eid)
+    if (lf.getKeyCount() <= cursor.eid)
     {
       // Set to sibling
+      if (lf.getNextNodePtr() == -1)
+        return -1;
       cursor.pid = lf.getNextNodePtr();
       cursor.eid = 0;
-
-      memcpy(lf,&pf+8+cursor.pid,sizeof(BTLeafNode));
+      getLeaf(cursor.pid, lf);
     }
     key = (lf.get_element(cursor.eid)).key;
     rid = (lf.get_element(cursor.eid)).rec_id;
+    cursor.eid++;
     return 0;
-    */
 }
+
+RC BTreeIndex::printIndex(IndexCursor ic)
+{
+  cout << "Printing Index Cursor: " << endl;
+  cout << "Index pid: " << ic.pid << endl;
+  cout << "Index eid: " << ic.eid << endl;
+
+  BTLeafNode leaf;
+  int key;
+  RecordId rid;
+  getLeaf(ic.pid, leaf);
+  leaf.readEntry(ic.eid, key, rid);
+  cout << "Key: " << key << endl;
+  cout << "Pid: " << rid.pid << endl;
+  cout << "Sid: " << rid.sid << endl;
+
+}
+
   RC BTreeIndex::printTree()
   {
     /*

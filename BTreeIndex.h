@@ -92,6 +92,7 @@ class BTreeIndex {
    * with the key value
    * @return error code. 0 if no error.
    */
+  RC locate_rec(int cur_height, int pid, int searchKey, IndexCursor& cursor);
   RC locate(int searchKey, IndexCursor& cursor);
 
   /**
@@ -106,6 +107,7 @@ class BTreeIndex {
 
   RC printTree();
   RC printTreeRecursive(int pid, int cur_height);
+  RC printIndex(IndexCursor ic);
   
 
 

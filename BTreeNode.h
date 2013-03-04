@@ -36,7 +36,7 @@ class BTLeafNode {
   public:
     BTLeafNode()
     {
-      int initial_size_value = -1;
+      int initial_size_value = 0;
       int initial_next_node_ptr_value = -1;
       memcpy(buffer, &initial_size_value, sizeof(int));
       memcpy(buffer+4, &initial_next_node_ptr_value, sizeof(int));
@@ -159,7 +159,7 @@ class BTNonLeafNode {
   public:
     BTNonLeafNode()
     {
-      int initial_size_value = -1;
+      int initial_size_value = 0;
       int initial_rightmost_node_ptr_value = -1;
       memcpy(buffer, &initial_size_value, sizeof(int));
       memcpy(buffer+4, &initial_rightmost_node_ptr_value, sizeof(int));
@@ -242,11 +242,18 @@ class BTNonLeafNode {
       int element_size = sizeof(struct NonLeafNodeElement);
       NonLeafNodeElement nlfe;
       memcpy(&size,buffer,sizeof(int));
+
+      PageId next;
+      get_rightmost_child_ptr(next);
+      //memcpy(&next, buffer+4, sizeof(int));
+
       cout << "Printing NonLeafNode of Size: " << size << endl;
+      cout << "| leftmost: " << next << endl;
       for (int i = 0; i < size; i++)
       {
         nlfe = get_element(i);
-        cout << "| pid: " << nlfe.pid << "  | key: " << nlfe.key << " ";
+        cout << "| key: " << nlfe.key << "  | pid: " << nlfe.pid << endl;
+        //cout << "| pid: " << nlfe.pid << "  | key: " << nlfe.key << " " << endl;
       }
       cout << endl;
     }
