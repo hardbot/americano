@@ -290,6 +290,12 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     return locate_rec(1, rootPid, searchKey, cursor);
 }
 
+int BTreeIndex::locateRecursive(int SearchKey, int cur_height, PageId pid)
+{
+
+
+}
+
 /*
  * Read the (key, rid) pair at the location specified by the index cursor,
  * and move foward the cursor to the next entry.

@@ -507,13 +507,14 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
 { 
   //assume buffer is sorted
   int num_elements = getKeyCount();
-  //cout<<"Key count: "<<num_elements<<endl;
+ // cout<<"locateChildPtr Key count: "<<num_elements<<endl;
   int element_size = sizeof(struct NonLeafNodeElement);
   int low = 0;
   int mid = 0;
   int high = num_elements - 1;
 
   int pid_to_return = 0;
+
 
   // Check for negative parameters
   if (searchKey < 0)

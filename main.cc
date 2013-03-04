@@ -229,8 +229,11 @@ int main()
   //assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
 
-  }
   /*
+=======
+  
+  //Testing NonLeafNode
+>>>>>>> 3c6f1244a2eb2007bb78ee716580b699ea78f6c4
   PageId pid2 = 0;
   PageFile pf2;
   pf2.open("temp2.tbl", 'w');
@@ -253,8 +256,9 @@ int main()
   assert(nonleaf.insert(6,pid2) == 1);
   assert(nonleaf.insert(7,pid2) == 1);
   assert(nonleaf.insert(8,pid2) == 1);
-
   nonleaf.write(pid2, pf2);
+
+/*
   PageId pid3 = 0;
   PageFile pf3;
   pf3.open("temp3.tbl", 'w');
@@ -269,15 +273,15 @@ int main()
   nonleaf2.read(pid3, pf3);
 
   assert(nonleaf2.insert(-1, pid3)==1);
-  assert(nonleaf2.insert(5, pid3)==1);
+ // assert(nonleaf2.insert(5, pid3)==1);
 
-
-  //PageId pid3 = 0;
- // PageFile pf3;
-  //pf3.open("temp3.tbl", 'w');
+*/
+  PageId pid3 = 0;
+  PageFile pf3;
+  pf3.open("temp3.tbl", 'w');
 
   BTNonLeafNode nonleaf2;
- // nonleaf2.read(pid3,pf3);
+  nonleaf2.read(pid3,pf3);
   assert(nonleaf2.insert(-1,pid2) == 1);
   char * nonleafbuffer2 = (char *) malloc(1024);
 
@@ -314,24 +318,33 @@ int main()
   pf2.write(0, nonleafbuffer3); 
   //read pid2 into nonleaf3
   nonleaf3.read(pid2,pf2);
+
+
   int pageid = -1;
   //check if locate errors if there are no children and nonleaf is empty
   assert(nonleaf3.locateChildPtr(1, pageid)==1);
   assert(pageid==-1);
 
+  //checking if can locate rightmost child ptr
   assert(nonleaf3.insert(1, 5)==0);
   assert(nonleaf3.locateChildPtr(1, pageid)==0);
  // cout<<"Value of pageid: "<<pageid<<endl;
   assert(pageid==100);
 
+  //check for leftmostpointer
   assert(nonleaf3.insert(3, 7)==0);
   assert(nonleaf3.locateChildPtr(0, pageid)==0);
   assert(pageid==5);
+
+  //check for in between 1 and 3
   assert(nonleaf3.locateChildPtr(2, pageid)==0);
   assert(pageid==7);
+  assert(nonleaf3.locateChildPtr(3, pageid)==0);
+  assert(pageid==100);
   assert(nonleaf3.locateChildPtr(5, pageid)==0);
   assert(pageid==100);
 
+  //check for 
   assert(nonleaf3.insert(7, 9)==0);
   assert(nonleaf3.locateChildPtr(5, pageid)==0);
   assert(pageid==9);
@@ -375,7 +388,7 @@ int main()
 
 
 
-
+/*
 
 
   pageid = -1;
@@ -409,9 +422,8 @@ int main()
   pageid = -1;
   assert(nonleaf3.locateChildPtr(11,pageid) == 0);
   assert(pageid == 4);
-  cout << "Passed all test cases for BTLeafNode locateChildPtr!" << endl;
-  */
-
+  cout << "Passed all test cases for BTNonLeafNode locateChildPtr!" << endl;
+*/
   // Test cases for BTreeIndex Insert
   BTreeIndex tree1;
   RecordId t_rid;
