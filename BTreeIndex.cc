@@ -166,6 +166,7 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       return 1;
     }
 
+    leaf.print_buffer();
     // Write leaf if no overflow
     leaf.write(pid, pf);
     return 0;

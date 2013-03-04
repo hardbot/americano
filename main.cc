@@ -450,16 +450,16 @@ int main()
   pf4.open("pf.test", 'r');
   IndexCursor cursor;
 
-  nonLeafNode.read(3, pf2);
-  nln2.read(3,pf2);
-  nln3.read(9,pf2);
-  leafNode.read(4,pf2);
-  lfn2.read(0,pf2);
-  lfn3.read(0,pf2);
+  nonLeafNode.read(3, pf4);
+  leafNode.read(7,pf4);
+  nln2.read(3,pf4);
+  nln3.read(9,pf4);
+  lfn2.read(0,pf4);
+  lfn3.read(0,pf4);
 
   nonLeafNode.print_buffer();
-  nln2.print_buffer();
-  nln3.print_buffer();
+  //nln2.print_buffer();
+  //nln3.print_buffer();
   leafNode.print_buffer();
   //lfn2.print_buffer();
   //lfn3.print_buffer();
@@ -468,7 +468,7 @@ int main()
   //tree1.printTree();
   tree1.print_height();
 
-  tree1.locate(8, cursor);
+  tree1.locate(20, cursor);
   tree1.printIndex(cursor);
 
   tree1.close();
