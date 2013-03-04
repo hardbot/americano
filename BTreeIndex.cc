@@ -130,9 +130,11 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     // Get leaf at pid
     getLeaf(pid, leaf);
 
+    cout << "Hello" << endl;
     // Split keys if overflow 
     if ( leaf.insert(key, rid) != 0)
     {
+      cout << "World" << endl;
       // Split up keys
       // sibling_key set to first key of sibling
       leaf.insertAndSplit(key, rid, sibling, sibling_key);
@@ -141,6 +143,8 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       // Write new sibling
       sibling_pid = pf.endPid();
       sibling.write(pf.endPid(), pf);
+      leaf.print_buffer();
+      sibling.print_buffer();
 
       return 1;
     }

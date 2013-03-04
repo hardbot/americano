@@ -59,7 +59,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
   if (key < 0)
     return 1;
   // Check if node is full
-  if(num_elements == MAX_NUM_POINTERS-1)
+  if(num_elements >= MAX_NUM_POINTERS-1)
     return 1;
   // Check for duplicates;
 
@@ -146,9 +146,9 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   {
     overflow[i] = get_element(i);
   }
-  overflow[element_size].key = key;
-  overflow[element_size].rec_id.sid = rid.sid;
-  overflow[element_size].rec_id.pid = rid.pid;
+  overflow[num_elements].key = key;
+  overflow[num_elements].rec_id.sid = rid.sid;
+  overflow[num_elements].rec_id.pid = rid.pid;
 
   // Backwards Bubble Sort
   for (int i = num_elements-1; i > 0; i--)
@@ -175,7 +175,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   // Clear current node
   // Set number of elemnts in node to zero
   num_elements = 0;
-  memcpy(buffer, &num_elements, element_size);
+  memcpy(buffer, &num_elements, sizeof(int));
 
   // Insert into current node
   for (int i = 0; i < half; i++)
@@ -444,8 +444,8 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   {
     overflow[i] = get_element(i);
   }
-  overflow[element_size].key = key;
-  overflow[element_size].pid = pid;
+  overflow[num_elements].key = key;
+  overflow[num_elements].pid = pid;
 
   // Backwards Bubble Sort
   for (int i = num_elements-1; i > 0; i--)

@@ -131,7 +131,7 @@ class BTLeafNode {
       {
         lfe = get_element(i);
         cout << "| sid: " << lfe.rec_id.sid << " | pid: " << lfe.rec_id.pid
-             << "  | key: " << lfe.key<<" ";
+             << "  | key: " << lfe.key<<" " << endl;
       }
       cout << endl;
     }
