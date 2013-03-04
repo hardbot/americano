@@ -184,7 +184,6 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   }
 
   // Insert into sibling node
-
   for (int i = half; i < num_overflow; i++)
   {
     sibling.insert(overflow[i].key, overflow[i].rec_id);
@@ -205,52 +204,22 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 RC BTLeafNode::locate(int searchKey, int& eid)
 { 
   int num_elements = getKeyCount();
-  int element_size = sizeof(struct LeafNodeElement);
-  int low = 0;
-  int mid = 0;
-  int high = num_elements - 1;
 
   // Check for negative parameters
   if (searchKey < 0)
     return 1;
   if (num_elements <= 0)
     return 1;
-  // Check for greater than greatest value;
-  if (searchKey > (get_element(num_elements-1).key))
-    return 1;
 
-  // Binary Search
-  while (low <= high)
+  for (int i = 0; i < num_elements; i++)
   {
-    mid = (low + high)/2;
-    // Search Lower
-    if (searchKey < (get_element(mid)).key)
+    if (searchKey <= get_element(i).key || i+1 == num_elements)
     {
-      high = mid - 1;
-      if ( low > high )
-      {
-        eid = mid;
-        return 0;
-      }
-    }
-    // Search Higher
-    else if (searchKey > (get_element(mid)).key)
-    {
-      low = mid + 1;
-      if ( low > high )
-      {
-        eid = mid + 1;
-        return 0;
-      }
-    }
-    // Equal
-    else
-    {
-      eid = mid;
+      eid = i;
       return 0;
     }
   }
-  return 1; 
+  return 0;
 }
 
 /*
@@ -573,7 +542,7 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
       if ( low > high )
       {
        // eid = mid;
-        pid = get_element(mid).pid;
+        pid = get_element(mid-1).pid;
         return 0;
       }
     }
@@ -590,7 +559,7 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
     // Equal
     else
     {
-      pid = get_element(mid+1).pid;
+      pid = get_element(mid).pid;
       return 0;
     }
   }
