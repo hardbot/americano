@@ -199,8 +199,8 @@ int main()
   assert(eid == 2);
   assert(leaf3.locate(7,eid) == 0);
   assert(eid == 3);
-  assert(leaf3.locate(13,eid) == 1);
-  assert(eid == 3);
+  assert(leaf3.locate(13,eid) == 0);
+  assert(eid == 4);
   assert(leaf3.locate(12,eid) == 0);
   assert(eid == 4);
   eid = -1;
@@ -469,14 +469,14 @@ int main()
   IndexCursor cursor;
 
   nonLeafNode.read(3, pf2);
-  nln2.read(0,pf2);
-  nln3.read(0,pf2);
+  nln2.read(3,pf2);
+  nln3.read(9,pf2);
   leafNode.read(4,pf2);
   lfn2.read(0,pf2);
   lfn3.read(0,pf2);
   nonLeafNode.print_buffer();
   nln2.print_buffer();
-  //nln3.print_buffer();
+  nln3.print_buffer();
   leafNode.print_buffer();
   //lfn2.print_buffer();
   //lfn3.print_buffer();
@@ -485,7 +485,7 @@ int main()
   //tree1.printTree();
   tree1.print_height();
 
-  tree1.locate(4, cursor);
+  tree1.locate(8, cursor);
   tree1.printIndex(cursor);
 
   tree1.close();
