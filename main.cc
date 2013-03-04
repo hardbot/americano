@@ -267,7 +267,7 @@ int main()
 
   nonleaf2.read(pid2, pf2);
   assert(nonleaf2.insert(5,pid2) == 1);
-  i =0;
+  int i =0;
   memcpy(nonleafbuffer2, &i, sizeof(int));
 
   pf2.write(0, nonleafbuffer2); 

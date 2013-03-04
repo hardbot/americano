@@ -318,10 +318,10 @@ RC BTNonLeafNode::insert(int key, PageId pid)
 
   //check for negative keys
   if(key<0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
   //check if node is full
   if(num_elements == MAX_NUM_POINTERS-1)
-    return 1;
+    return RC_NODE_FULL;
 
   // Set element to insert
   element.pid = pid;
@@ -385,10 +385,10 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
 
   // Check for negative parameters
   if (key < 0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
   // Check if sibling is empty
   if (sibling.getKeyCount() != 0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
 
   // Hold all overflow elements in temp array
   NonLeafNodeElement *overflow = new NonLeafNodeElement[num_overflow];
@@ -459,9 +459,9 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
 
   // Check for negative parameters
   if (searchKey < 0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
   if (num_elements <= 0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
 
   if (searchKey < (get_element(0).key))
   {
@@ -484,7 +484,7 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
     return 0;
   }
 
-  return 1;
+  return 0;
 }
 
 /*
