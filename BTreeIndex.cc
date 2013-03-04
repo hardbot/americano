@@ -228,7 +228,20 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
  */
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
+  //iterate through linearly (left to right)
+
+  //if current key > searchKey
+    //take current tree downwrads
+  //else
+    //
+
     return 0;
+}
+
+int BTreeIndex::locateRecursive(int SearchKey, int cur_height, PageId pid)
+{
+
+
 }
 
 /*
