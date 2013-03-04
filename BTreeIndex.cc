@@ -120,7 +120,8 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     end_pid = pf.endPid();
 
     // Split keys if overflow 
-    if ( leaf.insert(key, rid) != 0)
+    RC err = leaf.insert(key, rid);
+    if ( err == RC_NODE_FULL )
     {
       // Split up keys
       // sibling_key set to first key of sibling
@@ -133,6 +134,10 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       sibling.write(end_pid, pf);
 
       return 1;
+    }
+    else if (err != 0 )
+    {
+      return err;
     }
 
     // Write leaf if no overflow
@@ -160,7 +165,8 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         //return -1;
       
       // At some non leaf node
-      if (non_leaf.insert(sibling_key, sibling_pid) != 0)
+      RC err = non_leaf.insert(sibling_key, sibling_pid);
+      if (err == RC_NODE_FULL)
       {
         non_leaf.print_buffer();
         // Split up keys
@@ -175,6 +181,10 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         non_leaf_sibling.write(pf.endPid(),pf);
 
         return 1;
+      }
+      else if (err != 0)
+      {
+        return err;
       }
 
       // Write non leaf if no overflow

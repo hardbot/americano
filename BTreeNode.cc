@@ -12,8 +12,7 @@ testing git one more time
  */
 RC BTLeafNode::read(PageId pid, const PageFile& pf)
 { 
-	RC rc = pf.read(pid, buffer);
-	return rc;
+	return pf.read(pid, buffer);
 }
 
 /*
@@ -24,8 +23,7 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
  */
 RC BTLeafNode::write(PageId pid, PageFile& pf)
 { 
-  RC rc = pf.write(pid, buffer);
-  return rc;
+  return pf.write(pid, buffer);
 }
 
 /*
@@ -56,10 +54,10 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 
   // Check for negative keys
   if (key < 0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
   // Check if node is full
   if(num_elements >= MAX_NUM_POINTERS-1)
-    return 1;
+    return RC_NODE_FULL;
 
   // Set element to insert
   element.rec_id.pid = rid.pid;
@@ -127,10 +125,10 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 
   // Check for negative parameters
   if (key < 0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
   // Check if sibling is empty
   if (sibling.getKeyCount() != 0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
 
   // Hold all overflow elements in temp array
   LeafNodeElement *overflow = new LeafNodeElement[num_overflow];
@@ -199,9 +197,9 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 
   // Check for negative parameters
   if (searchKey < 0)
-    return 1;
+    return RC_INVALID_ATTRIBUTE;
   if (num_elements <= 0)
-    return 1;
+    return RC_END_OF_TREE;
 
   for (int i = 0; i < num_elements; i++)
   {
@@ -224,7 +222,8 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 { 
   //error
-  if(eid>getKeyCount()) return 1;
+  if( eid > getKeyCount() ) 
+    return RC_INVALID_ATTRIBUTE;
   LeafNodeElement lfe = get_element(eid);
 
   key = lfe.key;
@@ -250,7 +249,8 @@ PageId BTLeafNode::getNextNodePtr()
  */
 RC BTLeafNode::setNextNodePtr(PageId pid)
 { 
-  if(pid<0) return 1;
+  if( pid < 0 ) 
+    return RC_INVALID_PID;
   memcpy(buffer+4,&pid,sizeof(int));
   return 0;
 }

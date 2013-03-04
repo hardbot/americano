@@ -41,12 +41,12 @@ int main()
   rid.sid = 12;
 
   // third insert
-  assert(leaf.insert(0,rid) == 1);
-  assert(leaf.insert(1,rid) == 1);
-  assert(leaf.insert(2,rid) == 1);
-  assert(leaf.insert(3,rid) == 1);
-  assert(leaf.insert(4,rid) == 1);
-  assert(leaf.insert(5,rid) == 1);
+  assert(leaf.insert(0,rid) < 0);
+  assert(leaf.insert(1,rid) < 0);
+  assert(leaf.insert(2,rid) < 0);
+  assert(leaf.insert(3,rid) < 0);
+  assert(leaf.insert(4,rid) < 0);
+  assert(leaf.insert(5,rid) < 0);
   //leaf.print_leaf_node();
   
   //Test 2
@@ -64,14 +64,14 @@ int main()
   //leaf2.print_leaf_node();
   
   // third insert
-  assert(leaf2.insert(0,rid) == 1);
-  assert(leaf2.insert(1,rid) == 1);
-  assert(leaf2.insert(2,rid) == 1);
-  assert(leaf2.insert(3,rid) == 1);
-  assert(leaf2.insert(4,rid) == 1);
-  assert(leaf2.insert(5,rid) == 1);
-  assert(leaf2.insert(6,rid) == 1);
-  assert(leaf2.insert(7,rid) == 1);
+  assert(leaf2.insert(0,rid) < 0);
+  assert(leaf2.insert(1,rid) < 0);
+  assert(leaf2.insert(2,rid) < 0);
+  assert(leaf2.insert(3,rid) < 0);
+  assert(leaf2.insert(4,rid) < 0);
+  assert(leaf2.insert(5,rid) < 0);
+  assert(leaf2.insert(6,rid) < 0);
+  assert(leaf2.insert(7,rid) < 0);
   cout << "Passed all test cases for insert!\n" << endl;
 
   // Test 3
@@ -80,16 +80,16 @@ int main()
   rid.sid = 2;
   int eid = -1;
   // Locate in empty node
-  assert(leaf3.locate(1, eid) == 1);
+  assert(leaf3.locate(1, eid) < 0);
   assert(leaf3.insert(1,rid) == 0);
   assert(leaf3.locate(1, eid) == 0);
-  assert(leaf3.locate(2, eid) == 1);
-  assert(eid == 1);
+  assert(leaf3.locate(2, eid) < 0);
+  assert(eid < 0);
   // Locate something that has not been inserted
   assert(leaf3.insert(2,rid) == 0);
   assert(leaf3.locate(2, eid) == 0);
-  assert(leaf3.insert(3,rid) == 1);
-  assert(leaf3.locate(3, eid) == 1);
+  assert(leaf3.insert(3,rid) < 0);
+  assert(leaf3.locate(3, eid) < 0);
   assert(leaf3.locate(2, eid) == 0);
   assert(eid == 2);
 
@@ -107,7 +107,7 @@ int main()
   assert(eid == 9);
   assert(leaf31.locate(9,eid) == 0);
   assert(eid == 9);
-  assert(leaf31.locate(10,eid) == 1);
+  assert(leaf31.locate(10,eid) < 0);
   cout << "Passed all test cases for locate!\n" << endl;
   */
 
@@ -137,19 +137,19 @@ int main()
   assert(leaf.insert(3,rid) == 0);
   assert(leaf.insert(9,rid) == 0);
   assert(leaf.insert(2,rid) == 0);
-  assert(leaf.insert(6,rid) == 1);
-  assert(leaf.insert(7,rid) == 1);
-  assert(leaf.insert(8,rid) == 1);
+  assert(leaf.insert(6,rid) < 0);
+  assert(leaf.insert(7,rid) < 0);
+  assert(leaf.insert(8,rid) < 0);
   //leaf.print_buffer();
 
   leaf.write(pid, pf);
 
   BTLeafNode leaf2;
-  assert(leaf2.insert(-1,rid) == 1);
+  assert(leaf2.insert(-1,rid) < 0);
   char * buffer2 = (char *) malloc(1024);
 
   leaf2.read(pid,pf);
-  assert(leaf2.insert(5,rid) == 1);
+  assert(leaf2.insert(5,rid) < 0);
   i =0;
   memcpy(buffer2, &i, sizeof(int));
 
@@ -162,12 +162,12 @@ int main()
   assert(leaf2.insert(6,rid) == 0);
 
   //leaf2.print_buffer();
-  assert(leaf2.insert(0,rid) == 1);
-  assert(leaf2.insert(1,rid) == 1);
-  assert(leaf2.insert(2,rid) == 1);
-  assert(leaf2.insert(3,rid) == 1);
-  assert(leaf2.insert(4,rid) == 1);
-  assert(leaf2.insert(5,rid) == 1);
+  assert(leaf2.insert(0,rid) < 0);
+  assert(leaf2.insert(1,rid) < 0);
+  assert(leaf2.insert(2,rid) < 0);
+  assert(leaf2.insert(3,rid) < 0);
+  assert(leaf2.insert(4,rid) < 0);
+  assert(leaf2.insert(5,rid) < 0);
   cout << "Passed all test cases for BTLeafNode insert!" << endl;
 
   BTLeafNode leaf3;
@@ -177,7 +177,7 @@ int main()
   pf.write(0, buffer3); 
   leaf3.read(pid,pf);
   int eid = -1;
-  assert(leaf3.locate(1,eid) == 1);
+  assert(leaf3.locate(1,eid) < 0);
   assert(eid == -1);
   assert(leaf3.insert(1,rid) == 0);
   //leaf3.print_buffer();
@@ -190,11 +190,11 @@ int main()
   assert(eid == 1);
   assert(leaf3.locate(0,eid) == 0);
   assert(eid == 0);
-  assert(leaf3.locate(-1,eid) == 1);
+  assert(leaf3.locate(-1,eid) < 0);
   assert(leaf3.insert(5,rid) == 0);
   assert(leaf3.insert(9,rid) == 0);
   assert(leaf3.insert(12,rid) == 0);
-  assert(leaf3.insert(15,rid) == 1);
+  assert(leaf3.insert(15,rid) < 0);
   assert(leaf3.locate(4,eid) == 0);
   assert(eid == 2);
   assert(leaf3.locate(7,eid) == 0);
@@ -216,17 +216,17 @@ int main()
   assert(a.insert(3,rid) == 0);
   assert(a.insert(4,rid) == 0);
   assert(a.insert(5,rid) == 0);
-  assert(a.insert(6,rid) == 1);
-  assert(a.insert(7,rid) == 1);
+  assert(a.insert(6,rid) < 0);
+  assert(a.insert(7,rid) < 0);
   BTLeafNode siblinga;
   siblinga.read(pid,pf);
   int sibling_key = -1;
-  assert(a.insertAndSplit(-1,rid, siblinga, sibling_key) == 1);
+  assert(a.insertAndSplit(-1,rid, siblinga, sibling_key) < 0);
   assert(a.insertAndSplit(6,rid, siblinga, sibling_key) == 0);
   //a.print_buffer();
   //siblinga.print_buffer();
   assert(sibling_key == 4);
-  //assert(a.insertAndSplit(7,rid, siblinga, sibling_key) == 1);
+  //assert(a.insertAndSplit(7,rid, siblinga, sibling_key) < 0);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
   } 
 
@@ -250,9 +250,9 @@ int main()
   assert(nonleaf.insert(9,pid2) == 0);
   assert(nonleaf.insert(2,pid2) == 0);
   //nonleaf.print_buffer();
-  assert(nonleaf.insert(6,pid2) == 1);
-  assert(nonleaf.insert(7,pid2) == 1);
-  assert(nonleaf.insert(8,pid2) == 1);
+  assert(nonleaf.insert(6,pid2) < 0);
+  assert(nonleaf.insert(7,pid2) < 0);
+  assert(nonleaf.insert(8,pid2) < 0);
   nonleaf.write(pid2, pf2);
 
   
@@ -262,12 +262,12 @@ int main()
 
   BTNonLeafNode nonleaf2;
   nonleaf2.read(pid3,pf3);
-  assert(nonleaf2.insert(-1,pid2) == 1);
+  assert(nonleaf2.insert(-1,pid2) < 0);
   char * nonleafbuffer2 = (char *) malloc(1024);
 
   nonleaf2.read(pid2, pf2);
-  assert(nonleaf2.insert(5,pid2) == 1);
-  i =0;
+  assert(nonleaf2.insert(5,pid2) < 0);
+  int i = 0;
   memcpy(nonleafbuffer2, &i, sizeof(int));
 
   pf2.write(0, nonleafbuffer2); 
@@ -279,12 +279,12 @@ int main()
   assert(nonleaf2.insert(6,pid2) == 0);
 
   //leaf2.print_buffer();
-  assert(nonleaf2.insert(0,pid2) == 1);
-  assert(nonleaf2.insert(1,pid2) == 1);
-  assert(nonleaf2.insert(2,pid2) == 1);
-  assert(nonleaf2.insert(3,pid2) == 1);
-  assert(nonleaf2.insert(4,pid2) == 1);
-  assert(nonleaf2.insert(5,pid2) == 1);
+  assert(nonleaf2.insert(0,pid2) < 0);
+  assert(nonleaf2.insert(1,pid2) < 0);
+  assert(nonleaf2.insert(2,pid2) < 0);
+  assert(nonleaf2.insert(3,pid2) < 0);
+  assert(nonleaf2.insert(4,pid2) < 0);
+  assert(nonleaf2.insert(5,pid2) < 0);
   cout << "Passed all test cases for BTNonLeafNode insert!" << endl;
 
   BTNonLeafNode nonleaf3;
@@ -302,7 +302,7 @@ int main()
 
   int pageid = -1;
   //check if locate errors if there are no children and nonleaf is empty
-  assert(nonleaf3.locateChildPtr(1, pageid)==1);
+  assert(nonleaf3.locateChildPtr(1, pageid)< 0);
   assert(pageid==-1);
 
   //checking if can locate rightmost child ptr
@@ -314,7 +314,7 @@ int main()
   //check for leftmostpointer
   assert(nonleaf3.insert(3, 7)==0);
   assert(nonleaf3.locateChildPtr(0, pageid)==0);
-  assert(pageid==1);
+  assert(pageid< 0);
 
   //check for in between 1 and 3
   assert(nonleaf3.locateChildPtr(2, pageid)==0);
@@ -330,7 +330,7 @@ int main()
   assert(pageid==7);
   assert(nonleaf3.locateChildPtr(10, pageid)==0);
   assert(pageid==9);
-  assert(nonleaf3.locateChildPtr(-1, pageid)==1);
+  assert(nonleaf3.locateChildPtr(-1, pageid)< 0);
   assert(pageid==9);
   cout<<"Passed all test cases for BTNonLeafNode locateChildPtr!"<<endl;
 
@@ -351,14 +351,14 @@ int main()
   assert(nonleaf4.insert(3,3)==0);
   assert(nonleaf4.insert(4,4)==0);
   assert(nonleaf4.insert(5,5)==0);
-  assert(nonleaf4.insert(6,6)==1);
-  assert(nonleaf4.insert(7,7)==1);
-  assert(nonleaf4.insert(8,8)==1);
+  assert(nonleaf4.insert(6,6)< 0);
+  assert(nonleaf4.insert(7,7)< 0);
+  assert(nonleaf4.insert(8,8)< 0);
 
   BTNonLeafNode siblingn;
   siblingn.read(pid2,pf2);
   int midKey = -1;
-  assert(nonleaf4.insertAndSplit(-1, 6,siblingn, midKey)==1);
+  assert(nonleaf4.insertAndSplit(-1, 6,siblingn, midKey)< 0);
   assert(midKey==-1);
   assert(nonleaf4.insertAndSplit(6, 6, siblingn, midKey)==0);
  // cout<<"Value of midKey is: "<<midKey<<endl;
@@ -372,7 +372,7 @@ int main()
 
 
   pageid = -1;
-  assert(nonleaf3.locateChildPtr(1,pageid) == 1);
+  assert(nonleaf3.locateChildPtr(1,pageid) < 0);
   assert(pageid == -1);
   assert(nonleaf3.insert(1,pid2) == 0);
   //leaf3.print_buffer();
@@ -380,22 +380,22 @@ int main()
   assert(pageid == 0);
   assert(nonleaf3.insert(3,pid2) == 0);
   assert(nonleaf3.locateChildPtr(3,pageid) == 0);
-  assert(pageid == 1);
+  assert(pageid < 0);
   assert(nonleaf3.locateChildPtr(2,pageid) == 0);
-  assert(pageid == 1);
+  assert(pageid < 0);
   assert(nonleaf3.locateChildPtr(0,pageid) == 0);
   assert(pageid == 0);
-  assert(nonleaf3.locateChildPtr(-1,pageid) == 1);
+  assert(nonleaf3.locateChildPtr(-1,pageid) < 0);
   assert(nonleaf3.insert(5,pid2) == 0);
   assert(nonleaf3.insert(9,pid2) == 0);
 
   assert(nonleaf3.insert(12,pid2) == 0);
-  assert(nonleaf3.insert(15,pid2) == 1);
+  assert(nonleaf3.insert(15,pid2) < 0);
   assert(nonleaf3.locateChildPtr(4,pageid) == 0);
   assert(pageid == 2);
   assert(nonleaf3.locateChildPtr(7,pageid) == 0);
   assert(pageid == 3);
-  assert(nonleaf3.locateChildPtr(13,pageid) == 1);
+  assert(nonleaf3.locateChildPtr(13,pageid) < 0);
   assert(pageid == 3);
   assert(nonleaf3.locateChildPtr(12,pageid) == 0);
   assert(pageid == 4);
