@@ -101,6 +101,7 @@ RC BTreeIndex::close()
 RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key)
 {
   int child_pid, propagate = -1; 
+  int end_pid = pf.endPid();
   BTLeafNode leaf, sibling;
   BTNonLeafNode non_leaf, non_leaf_sibling;
 
@@ -137,12 +138,13 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       cout << "World" << endl;
       // Split up keys
       // sibling_key set to first key of sibling
+      sibling.read(end_pid, pf);
       leaf.insertAndSplit(key, rid, sibling, sibling_key);
       // Write update leaf
       leaf.write(pid, pf);
       // Write new sibling
-      sibling_pid = pf.endPid();
-      sibling.write(pf.endPid(), pf);
+      sibling_pid = end_pid;
+      sibling.write(end_pid, pf);
       leaf.print_buffer();
       sibling.print_buffer();
 
