@@ -15,7 +15,7 @@
 
 #include <iostream>
 using namespace std;
-#define MAX_NUM_POINTERS 6
+#define MAX_NUM_POINTERS 3
 
 struct LeafNodeElement
 {
@@ -38,7 +38,7 @@ class BTLeafNode {
     BTLeafNode()
     {
       int initial_size_value = 0;
-      int initial_next_node_ptr_value = -1;
+      int initial_next_node_ptr_value = -2;
       memcpy(buffer, &initial_size_value, sizeof(int));
       memcpy(buffer+4, &initial_next_node_ptr_value, sizeof(int));
     }
@@ -161,9 +161,9 @@ class BTNonLeafNode {
     BTNonLeafNode()
     {
       int initial_size_value = 0;
-      int initial_rightmost_node_ptr_value = -1;
+      int initial_leftmost_node_ptr_value = -1;
       memcpy(buffer, &initial_size_value, sizeof(int));
-      memcpy(buffer+4, &initial_rightmost_node_ptr_value, sizeof(int));
+      memcpy(buffer+4, &initial_leftmost_node_ptr_value, sizeof(int));
     }
 
    /**
