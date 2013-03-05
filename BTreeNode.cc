@@ -120,7 +120,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   int num_elements = getKeyCount();
   int element_size = sizeof(struct LeafNodeElement);
   int num_overflow = num_elements + 1;
-  int half = (num_overflow)/2;
+  int half = (num_overflow+1)/2;
   LeafNodeElement tmp;
 
   // Check for negative parameters
@@ -171,17 +171,17 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   memcpy(buffer, &num_elements, sizeof(int));
 
   // Insert into current node
-  for (int i = 0; i < half+1; i++)
+  for (int i = 0; i < half; i++)
   {
     insert(overflow[i].key, overflow[i].rec_id);
   }
 
   // Insert into sibling node
-  for (int i = half+1; i < num_overflow; i++)
+  for (int i = half; i < num_overflow; i++)
   {
     sibling.insert(overflow[i].key, overflow[i].rec_id);
   }
-  siblingKey = overflow[half+1].key;
+  siblingKey = overflow[half].key;
 
   free(overflow);
 
