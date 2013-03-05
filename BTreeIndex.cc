@@ -88,7 +88,7 @@ RC BTreeIndex::close()
 RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key, int &mid_key)
 {
   int child_pid = -1, propagate = -1; 
-  int end_pid = 0;
+  int end_pid = -1;
   BTLeafNode leaf, sibling;
   BTNonLeafNode non_leaf, non_leaf_sibling;
 
@@ -122,7 +122,10 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
   else if (cur_height == treeHeight)
   {
     // Get leaf at pid
-    getLeaf(pid, leaf);
+    if (pf.endPid() > 1)
+      getLeaf(pid, leaf);
+
+    leaf.print_buffer();
 
     // Split keys if overflow 
     RC err = leaf.insert(key, rid);

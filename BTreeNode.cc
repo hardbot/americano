@@ -195,6 +195,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
     sibling.insert(overflow[i].key, overflow[i].rec_id);
   }
   siblingKey = overflow[half].key;
+  sibling.setNextNodePtr(getNextNodePtr());
 
   free(overflow);
 
@@ -255,7 +256,7 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
  */
 PageId BTLeafNode::getNextNodePtr()
 { 
-  PageId pid;
+  PageId pid = -1;
   memcpy(&pid,buffer+4,sizeof(int));
   return pid;
 }
