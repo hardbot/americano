@@ -67,6 +67,11 @@ class SqlEngine {
    * @return error code. 0 if no error
    */
   static RC parseLoadLine(const std::string& line, int& key, std::string& value);
+
+
+  static void printTuple(const int& attr, const int& key, const std::string& value);
+
+
 };
 
 #endif /* SQLENGINE_H */
