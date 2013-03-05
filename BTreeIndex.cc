@@ -31,8 +31,15 @@ BTreeIndex::BTreeIndex()
 RC BTreeIndex::open(const string& indexname, char mode)
 {
     RC ret = pf.open(indexname, mode);
+    if(ret !=0) return ret;
     if (mode == 'w')
+    {
       init();
+    }
+    else if(mode=='r')
+    {
+      loadMeta();
+    }
     return ret;
 }
 
@@ -54,6 +61,16 @@ RC BTreeIndex::setMeta()
   tm.height = treeHeight;
   memcpy(buffer, &tm, sizeof(struct TreeMeta));
   pf.write(0, buffer);
+}
+
+RC BTreeIndex::loadMeta()
+{
+  char buffer[1024];
+  pf.read(0, buffer);
+  TreeMeta tm;
+  memcpy(&tm, buffer, sizeof(struct TreeMeta));
+  rootPid = tm.root;
+  treeHeight = tm.height;
 }
 
 RC BTreeIndex::getLeaf(PageId pid, BTLeafNode &lf)
@@ -249,12 +266,15 @@ RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& c
     BTLeafNode leaf;
     BTNonLeafNode non_leaf;
     int eid = 0, child_pid = 0;
+    cout<<"Tree height: "<<treeHeight<<endl;
     if (cur_height == treeHeight)
     {
+      cout<<"GOT THIS FAR IN LOCATE!"<<endl;
       getLeaf(pid, leaf);
       leaf.locate(searchKey, eid);
       cursor.pid = pid;
       cursor.eid = eid;
+
     }
     else
     {

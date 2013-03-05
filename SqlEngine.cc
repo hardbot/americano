@@ -76,10 +76,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   bool less_than_not_equal = false;
   //used for locate
   IndexCursor cursor;
+  cursor.pid =-1;
+  cursor.eid =0;
 
   int key_min=0;
   int key_max=-1;
-
 
   RC     rc;
   int    key;     
@@ -93,7 +94,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     return rc;
   }
 
-
+  cout<<"Size of cond.size(): "<<cond.size()<<endl;
   //check for 'key' in WHERE clause
   for(unsigned i = 0; i < cond.size(); i++)
   {
@@ -106,6 +107,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       if(cond[i].comp == SelCond::EQ)
       {
         key_min = key_max = atoi(cond[i].value);
+        cout<<"Value of key_min: "<<key_min<<endl;
       }
       //if greater than
       else if(cond[i].comp == SelCond::GT)
@@ -134,6 +136,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
   //open the B+ Tree
   rc = b_tree.open(table + ".idx", 'r');
+  cout<<"RC value from opening B+ Tree: "<<rc<<endl;
 
   //if index file exists and there is a condition on key
   if(rc==0 && key_in_where == true)
@@ -141,12 +144,17 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     //if looking for just one tuple
     if(key_min == key_max)
     {
+      cout<<"Got this far!"<<endl;
       //place cursur on the tuple
       b_tree.locate(key_max, cursor);
 
+      cout<<"Got past locate!"<<endl;
+
       //read the tuple into key, rid
       b_tree.readForward(cursor, key, rid);
+      cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
 
+      
       //read the tuple at rid
       if ((rc = rf.read(rid, key, value)) < 0) 
       {
@@ -154,12 +162,14 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         rf.close();
         return rc;
       }
-      SqlEngine::printTuple(attr, key, value);
+      if(key==key_max)
+        SqlEngine::printTuple(attr, key, value);
     }
     //range where max is not specified but minimum is, ie key > 800
     else if(key_max==-1)
     {
       b_tree.locate(key_min, cursor);
+      cout<<"Got past locate with key_min: "<<key_min<<endl;
 
       //if looking for greater than but not equal to, readForward one more
       if(greater_than_not_equal)
@@ -167,8 +177,9 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         b_tree.readForward(cursor, key, rid);
       }
 
-      while(b_tree.readForward(cursor, key, rid))
+      while(b_tree.readForward(cursor, key, rid)==0)
       {
+        cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
         if ((rc = rf.read(rid, key, value)) < 0) 
         {
           fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
@@ -189,8 +200,9 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         b_tree.readForward(cursor, key, rid);
       }
 
-      while(b_tree.readForward(cursor, key, rid) && key <= key_max)
+      while((b_tree.readForward(cursor, key, rid)==0) && key <= key_max)
       {
+        //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
         if(greater_than_not_equal && (key >= key_max))
         {
           break;
@@ -204,83 +216,82 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         printTuple(attr, key, value);
       }
     }
-
   }
   else
   {
-
-  // scan the table file from the beginning
-  rid.pid = rid.sid = 0;
-  count = 0;
-  while (rid < rf.endRid()) {
-    // read the tuple
-    if ((rc = rf.read(rid, key, value)) < 0) {
-      fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
-      goto exit_select;
-    }
-
-    // check the conditions on the tuple
-    for (unsigned i = 0; i < cond.size(); i++) {
-      // compute the difference between the tuple value and the condition value
-      switch (cond[i].attr) {
-      case 1:
-	diff = key - atoi(cond[i].value);
-	break;
-      case 2:
-	diff = strcmp(value.c_str(), cond[i].value);
-	break;
+    cout<<"Got inside else statement"<<endl;
+    // scan the table file from the beginning
+    rid.pid = rid.sid = 0;
+    count = 0;
+    while (rid < rf.endRid()) {
+      // read the tuple
+      if ((rc = rf.read(rid, key, value)) < 0) {
+        fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+        goto exit_select;
       }
 
-      // skip the tuple if any condition is not met
-      switch (cond[i].comp) {
-      case SelCond::EQ:
-	if (diff != 0) goto next_tuple;
-	break;
-      case SelCond::NE:
-	if (diff == 0) goto next_tuple;
-	break;
-      case SelCond::GT:
-	if (diff <= 0) goto next_tuple;
-	break;
-      case SelCond::LT:
-	if (diff >= 0) goto next_tuple;
-	break;
-      case SelCond::GE:
-	if (diff < 0) goto next_tuple;
-	break;
-      case SelCond::LE:
-	if (diff > 0) goto next_tuple;
-	break;
+      // check the conditions on the tuple
+      for (unsigned i = 0; i < cond.size(); i++) {
+        // compute the difference between the tuple value and the condition value
+        switch (cond[i].attr) {
+          case 1:
+	         diff = key - atoi(cond[i].value);
+	         break;
+          case 2:
+	         diff = strcmp(value.c_str(), cond[i].value);
+	         break;
+        }
+
+        // skip the tuple if any condition is not met
+        switch (cond[i].comp) {
+          case SelCond::EQ:
+	         if (diff != 0) goto next_tuple;
+	         break;
+          case SelCond::NE:
+	         if (diff == 0) goto next_tuple;
+	         break;
+          case SelCond::GT:
+	         if (diff <= 0) goto next_tuple;
+	         break;
+          case SelCond::LT:
+	         if (diff >= 0) goto next_tuple;
+	         break;
+          case SelCond::GE:
+	         if (diff < 0) goto next_tuple;
+	         break;
+          case SelCond::LE:
+	         if (diff > 0) goto next_tuple;
+	         break;
+        }
       }
+
+      // the condition is met for the tuple. 
+      // increase matching tuple counter
+      count++;
+
+      // print the tuple 
+      switch (attr) {
+        case 1:  // SELECT key
+          fprintf(stdout, "%d\n", key);
+          break;
+        case 2:  // SELECT value
+          fprintf(stdout, "%s\n", value.c_str());
+          break;
+        case 3:  // SELECT *
+          fprintf(stdout, "%d '%s'\n", key, value.c_str());
+          break;
+      }
+
+      // move to the next tuple
+      next_tuple:
+      ++rid;
     }
 
-    // the condition is met for the tuple. 
-    // increase matching tuple counter
-    count++;
-
-    // print the tuple 
-    switch (attr) {
-    case 1:  // SELECT key
-      fprintf(stdout, "%d\n", key);
-      break;
-    case 2:  // SELECT value
-      fprintf(stdout, "%s\n", value.c_str());
-      break;
-    case 3:  // SELECT *
-      fprintf(stdout, "%d '%s'\n", key, value.c_str());
-      break;
+    // print matching tuple count if "select count(*)"
+    if (attr == 4) {
+      fprintf(stdout, "%d\n", count);
     }
-
-    // move to the next tuple
-    next_tuple:
-    ++rid;
-  }
-
-  // print matching tuple count if "select count(*)"
-  if (attr == 4) {
-    fprintf(stdout, "%d\n", count);
-  }
-  rc = 0;
+    rc = 0;
   }
   // close the table file and return
   exit_select:
