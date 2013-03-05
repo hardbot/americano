@@ -85,9 +85,9 @@ RC BTreeIndex::close()
 // 1 = propogate
 // 0 = success
 // < 0 = error
-RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key)
+RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key, int &mid_key)
 {
-  int child_pid, propagate = -1; 
+  int child_pid = -1, propagate = -1; 
   int end_pid = 0;
   BTLeafNode leaf, sibling;
   BTNonLeafNode non_leaf, non_leaf_sibling;
@@ -96,7 +96,7 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
   if (cur_height == 0)
   {
     // Recurse
-    propagate = insert_rec(cur_height+1, pid, key, rid, sibling_pid, sibling_key);
+    propagate = insert_rec(cur_height+1, pid, key, rid, sibling_pid, sibling_key, mid_key);
 
     // Propogate key up to root
     if (propagate == 1)
@@ -108,7 +108,11 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       setMeta();
 
       // Initialize new root
-      non_leaf.initializeRoot(pid, sibling_key, sibling_pid);
+      if (treeHeight == 2)
+        non_leaf.initializeRoot(pid, sibling_key, sibling_pid);
+      else
+        non_leaf.initializeRoot(pid, mid_key, sibling_pid);
+
       non_leaf.write(end_pid, pf);
     }
   }
@@ -117,7 +121,6 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
   {
     // Get leaf at pid
     getLeaf(pid, leaf);
-    end_pid = pf.endPid();
 
     // Split keys if overflow 
     RC err = leaf.insert(key, rid);
@@ -125,9 +128,15 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     {
       // Split up keys
       // sibling_key set to first key of sibling
-      leaf.insertAndSplit(key, rid, sibling, sibling_key);
-      leaf.setNextNodePtr(end_pid);
+      err = leaf.insertAndSplit(key, rid, sibling, sibling_key);
+      if (err < 0)
+      {
+        return err;
+      }
+      end_pid = pf.endPid();
+
       // Write update leaf
+      leaf.setNextNodePtr(end_pid);
       leaf.write(pid, pf);
       // Write new sibling
       sibling_pid = end_pid;
@@ -150,13 +159,12 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
   {
     // Get non leaf at pid
     getNonLeaf(pid, non_leaf);
-    end_pid = pf.endPid();
 
     // Get pid to travel to in child_pid
-    non_leaf.locateChildPtr(key, child_pid);
-
+    RC err2 =  non_leaf.locateChildPtr(key, child_pid);
     // Recurse to next height with child_pid
-    propagate = insert_rec(cur_height+1, child_pid, key, rid, sibling_pid, sibling_key);
+    propagate = insert_rec(cur_height+1, child_pid, key, rid, sibling_pid, sibling_key, mid_key);
+
     // Propagate sibling keys up
     if (propagate == 1)
     {
@@ -168,17 +176,17 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       RC err = non_leaf.insert(sibling_key, sibling_pid);
       if (err == RC_NODE_FULL)
       {
-        non_leaf.print_buffer();
         // Split up keys
         // Sibling_key set to mid key from non_leaf
-        non_leaf.insertAndSplit(key, pid, non_leaf_sibling, sibling_key);
+        non_leaf.insertAndSplit(sibling_key, sibling_pid, non_leaf_sibling, mid_key);
 
         // Write updated non leaf
         non_leaf.write(pid, pf);
 
         // Write new non leaf sibling
-        sibling_pid = pf.endPid();
-        non_leaf_sibling.write(pf.endPid(),pf);
+        end_pid = pf.endPid();
+        sibling_pid = end_pid;
+        non_leaf_sibling.write(end_pid, pf);
 
         return 1;
       }
@@ -210,9 +218,10 @@ void BTreeIndex::print_height()
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
     // Assume Tree is initialized
-    PageId pid = -1;
-    int sibling_key = -1;
-    return insert_rec(0, rootPid, key, rid, pid, sibling_key);
+    PageId pid = -5;
+    int sibling_key = -6;
+    int mid_key = -1;
+    return insert_rec(0, rootPid, key, rid, pid, sibling_key, mid_key);
 }
 
 /*

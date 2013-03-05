@@ -116,7 +116,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 RC BTLeafNode::insertAndSplit(int key, const RecordId& rid, 
     BTLeafNode& sibling, int& siblingKey)
 { 
-  int eid = -1;
+  //int eid = -1;
   int num_elements = getKeyCount();
   int element_size = sizeof(struct LeafNodeElement);
   int num_overflow = num_elements + 1;
@@ -134,14 +134,17 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   LeafNodeElement *overflow = new LeafNodeElement[num_overflow];
   for (int i = 0; i < num_elements; i++)
   {
-    overflow[i] = get_element(i);
+    overflow[i].key = get_element(i).key;
+    overflow[i].rec_id.sid = get_element(i).rec_id.sid;
+    overflow[i].rec_id.pid = get_element(i).rec_id.pid;
+
   }
   overflow[num_elements].key = key;
   overflow[num_elements].rec_id.sid = rid.sid;
   overflow[num_elements].rec_id.pid = rid.pid;
 
   // Backwards Bubble Sort
-  for (int i = num_elements-1; i > 0; i--)
+  for (int i = num_elements; i > 0; i--)
   {
     if(overflow[i].key < overflow[i-1].key)
     {
@@ -168,17 +171,19 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   memcpy(buffer, &num_elements, sizeof(int));
 
   // Insert into current node
-  for (int i = 0; i < half; i++)
+  for (int i = 0; i < half+1; i++)
   {
     insert(overflow[i].key, overflow[i].rec_id);
   }
 
   // Insert into sibling node
-  for (int i = half; i < num_overflow; i++)
+  for (int i = half+1; i < num_overflow; i++)
   {
     sibling.insert(overflow[i].key, overflow[i].rec_id);
   }
-  siblingKey = overflow[half].key;
+  siblingKey = overflow[half+1].key;
+
+  free(overflow);
 
   return 0; 
 }
@@ -203,13 +208,13 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 
   for (int i = 0; i < num_elements; i++)
   {
-    if (searchKey <= get_element(i).key || i+1 == num_elements)
+    if (searchKey <= get_element(i).key)
     {
       eid = i;
       return 0;
     }
   }
-  return 0;
+  return RC_NO_SUCH_RECORD;
 }
 
 /*
@@ -311,16 +316,18 @@ int BTNonLeafNode::getKeyCount()
  */
 RC BTNonLeafNode::insert(int key, PageId pid)
 { 
-  int eid = -1;
+  //int eid = -1;
   int num_elements = getKeyCount();
   int element_size = sizeof(struct NonLeafNodeElement);
   NonLeafNodeElement element, left_element, right_element, temp;
 
   //check for negative keys
-  if(key<0)
+  if(key < 0)
     return RC_INVALID_ATTRIBUTE;
+  if(pid < 0)
+    return RC_INVALID_PID;
   //check if node is full
-  if(num_elements == MAX_NUM_POINTERS-1)
+  if(num_elements >= MAX_NUM_POINTERS-1)
     return RC_NODE_FULL;
 
   // Set element to insert
@@ -356,7 +363,6 @@ RC BTNonLeafNode::insert(int key, PageId pid)
 
   }
   // Iterate size
-  num_elements = getKeyCount();
   num_elements++;
   memcpy(buffer, &num_elements, sizeof(int));
 
@@ -375,7 +381,6 @@ RC BTNonLeafNode::insert(int key, PageId pid)
  */
 RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, int& midKey)
 { 
-  int eid = -1;
   int num_elements = getKeyCount();
   int element_size = sizeof(struct NonLeafNodeElement);
   int num_overflow = num_elements + 1;
@@ -386,6 +391,8 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   // Check for negative parameters
   if (key < 0)
     return RC_INVALID_ATTRIBUTE;
+  if (pid < 0)
+    return RC_INVALID_PID;
   // Check if sibling is empty
   if (sibling.getKeyCount() != 0)
     return RC_INVALID_ATTRIBUTE;
@@ -394,7 +401,8 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   NonLeafNodeElement *overflow = new NonLeafNodeElement[num_overflow];
   for (int i = 0; i < num_elements; i++)
   {
-    overflow[i] = get_element(i);
+    overflow[i].key = get_element(i).key;
+    overflow[i].pid = get_element(i).pid;
   }
   overflow[num_elements].key = key;
   overflow[num_elements].pid = pid;
@@ -418,9 +426,6 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     }
   }
 
-  //midKey = (get_element(half)).key;
-  midKey = overflow[half].key;
-
   // Clear current node
   // Set number of elemnts in node to zero
   num_elements = 0;
@@ -432,6 +437,8 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     insert(overflow[i].key, overflow[i].pid);
   }
 
+  midKey = overflow[half].key;
+
   // Initalize sibling 
   sibling.initializeRoot(overflow[half].pid, overflow[half+1].key, overflow[half+1].pid);
 
@@ -440,6 +447,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   {
     sibling.insert(overflow[i].key, overflow[i].pid);
   }
+  free(overflow);
 
   return 0; 
 }
@@ -467,24 +475,27 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
   {
     memcpy(&pid_to_return, buffer+4, sizeof(int));
     pid = pid_to_return;
+
     return 0;
   }
-  //
+
   for(int i = 1; i < num_elements; i++)
   {
     if(searchKey < (get_element(i).key))
     {
       pid = (get_element(i-1).pid);
+
       return 0;
     }
   }
-  if(searchKey>= get_element(num_elements-1).key)
+  if(searchKey >= get_element(num_elements-1).key)
   {
     pid = get_element(num_elements-1).pid;
+
     return 0;
   }
 
-  return 0;
+  return RC_NO_SUCH_RECORD;
 }
 
 /*
@@ -498,7 +509,7 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
 {
   // Pointer to pageid greater than greatest key
   // Always set to eid = 1
-  memcpy(buffer+4,&pid1,sizeof(int));
+  memcpy(buffer+4, &pid1, sizeof(int));
   // Rest of root
   insert(key, pid2);
   return 0;

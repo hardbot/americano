@@ -74,7 +74,7 @@ class BTreeIndex {
    * @param rid[IN] the RecordId for the record being inserted into the index
    * @return error code. 0 if no error
    */
-  RC insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key);
+  RC insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key, int &mid_key);
   RC insert(int key, const RecordId& rid);
 
   /**
