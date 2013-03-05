@@ -199,8 +199,8 @@ int main()
   assert(eid == 2);
   assert(leaf3.locate(7,eid) == 0);
   assert(eid == 3);
-  assert(leaf3.locate(13,eid) == 0);
-  assert(eid == 4);
+  assert(leaf3.locate(13,eid) < 0 );
+  assert(eid == 3);
   assert(leaf3.locate(12,eid) == 0);
   assert(eid == 4);
   eid = -1;
@@ -228,7 +228,6 @@ int main()
   assert(sibling_key == 4);
   //assert(a.insertAndSplit(7,rid, siblinga, sibling_key) < 0);
   cout << "Passed all test cases for BTLeafNode insertAndSplit!" << endl;
-  } 
 
   
   PageId pid2 = 0;
@@ -267,7 +266,7 @@ int main()
 
   nonleaf2.read(pid2, pf2);
   assert(nonleaf2.insert(5,pid2) < 0);
-  int i = 0;
+  i = 0;
   memcpy(nonleafbuffer2, &i, sizeof(int));
 
   pf2.write(0, nonleafbuffer2); 
@@ -314,7 +313,7 @@ int main()
   //check for leftmostpointer
   assert(nonleaf3.insert(3, 7)==0);
   assert(nonleaf3.locateChildPtr(0, pageid)==0);
-  assert(pageid< 0);
+  assert(pageid==1);
 
   //check for in between 1 and 3
   assert(nonleaf3.locateChildPtr(2, pageid)==0);
@@ -367,6 +366,7 @@ int main()
   cout<<"Passed all test cases for BTNonLeafNode insertAndSplit!\n";
 
 
+  } 
 
 /*
 
@@ -413,6 +413,7 @@ int main()
 
   //tree1.init();
   //tree1.print_height();
+  /*
   assert(tree1.insert(1, t_rid) == 0);
   assert(tree1.insert(2, t_rid) == 0);
   assert(tree1.insert(3, t_rid) == 0);
@@ -435,7 +436,6 @@ int main()
   assert(tree1.insert(19, t_rid) == 0);
   //tree1.print_height();
   assert(tree1.insert(20, t_rid) == 0);
-  /*
   assert(tree1.insert(21, t_rid) == 0);
   assert(tree1.insert(22, t_rid) == 0);
   assert(tree1.insert(23, t_rid) == 0);
@@ -444,6 +444,8 @@ int main()
   assert(tree1.insert(26, t_rid) == 0);
   assert(tree1.insert(27, t_rid) == 0);
   */
+
+    //assert(tree1.insert(0, t_rid) == 0);
   BTNonLeafNode nonLeafNode, nln2,nln3;
   BTLeafNode leafNode,lfn2,lfn3;
   PageFile pf4;
@@ -451,16 +453,16 @@ int main()
   IndexCursor cursor;
 
   nonLeafNode.read(3, pf4);
-  leafNode.read(7,pf4);
-  nln2.read(3,pf4);
-  nln3.read(9,pf4);
-  lfn2.read(0,pf4);
-  lfn3.read(0,pf4);
+  leafNode.read(2,pf4);
+  nln2.read(7,pf4);
+  nln3.read(11,pf4);
+  //lfn2.read(8,pf4);
+  //lfn3.read(0,pf4);
 
-  //nonLeafNode.print_buffer();
-  //nln2.print_buffer();
-  //nln3.print_buffer();
-  //leafNode.print_buffer();
+  nonLeafNode.print_buffer();
+  nln2.print_buffer();
+  nln3.print_buffer();
+  leafNode.print_buffer();
   //lfn2.print_buffer();
   //lfn3.print_buffer();
 
@@ -483,7 +485,7 @@ int main()
 
   tree1.close();
 
-  cout << "Passed all test casses for BTreeIndex insert!" << endl;
+  cout << "Passed all test cases for BTreeIndex insert!" << endl;
 
   return 0;
 }

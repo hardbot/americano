@@ -12,6 +12,7 @@
 #include <fstream>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
+#include "BTreeIndex.h"
 
 using namespace std;
 
@@ -141,6 +142,13 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   //buffer for storing each line as a string
   string line_buffer;
 
+  BTreeIndex btree;
+
+  if (index == true)
+  {
+    btree.open(table+".idx", 'w');
+  }
+
   RecordId rec_id;
   int line_count=0;
   int key=0;
@@ -150,12 +158,22 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   {
     getline(load_file, line_buffer, '\n');
     parseLoadLine(line_buffer, key, value);
+    if (index == true)
+    {
+      btree.insert(key, rec_id);
+    }
     if(table_file.append(key, value, rec_id ))
     {
       cout<<"Error appending to table line "<<line_count<<endl;
     }
     line_count++;
   }
+
+  if (index == true)
+  {
+    btree.close();
+  }
+
 
  // cout<<"Reached end of load file with line count"<<line_count<<endl;
 
