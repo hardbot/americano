@@ -370,12 +370,6 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 
   }
 
-  if (index == true)
-  {
-    btree.close();
-  }
-
-
  // cout<<"Reached end of load file with line count"<<line_count<<endl;
 
   return 0;

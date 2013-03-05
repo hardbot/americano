@@ -390,7 +390,7 @@ int main()
   tree1.close();
 
   cout << "Passed all test cases for BTreeIndex insert!" << endl;
-
+/*
   PageFile pf4;
   BTreeIndex tree1;
   RecordId pf4rid;
