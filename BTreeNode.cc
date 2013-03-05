@@ -58,6 +58,12 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
   // Check if node is full
   if(num_elements >= MAX_NUM_POINTERS-1)
     return RC_NODE_FULL;
+  if(locate(key, eid) == 0 && get_element(eid).key == key)
+  {
+    cout << "DUPLICATE DETECTED" << endl;
+    exit(1);
+    return -1;
+  }
 
   // Set element to insert
   element.rec_id.pid = rid.pid;
@@ -122,6 +128,13 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   int num_overflow = num_elements + 1;
   int half = (num_overflow+1)/2;
   LeafNodeElement tmp;
+  int eid = -1;
+  if(locate(key, eid) == 0 && get_element(eid).key == key)
+  {
+    cout << "DUPLICATE DETECTED" << endl;
+    exit(1);
+    return -1;
+  }
 
   // Check for negative parameters
   if (key < 0)
@@ -329,6 +342,13 @@ RC BTNonLeafNode::insert(int key, PageId pid)
   //check if node is full
   if(num_elements >= MAX_NUM_POINTERS-1)
     return RC_NODE_FULL;
+  int eid = -1;
+  //if(locate(key, eid) == 0 && get_element(eid).key == key)
+  {
+    //cout << "DUPLICATE DETECTED" << endl;
+    //exit(1);
+    //return -1;
+  }
 
   // Set element to insert
   element.pid = pid;
@@ -396,6 +416,13 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   // Check if sibling is empty
   if (sibling.getKeyCount() != 0)
     return RC_INVALID_ATTRIBUTE;
+  //int eid = -1;
+  //if(locate(key, eid) == 0 && get_element(eid).key == key)
+  //{
+    //cout << "DUPLICATE DETECTED" << endl;
+    //exit(1);
+    //return -1;
+  //}
 
   // Hold all overflow elements in temp array
   NonLeafNodeElement *overflow = new NonLeafNodeElement[num_overflow];
