@@ -114,6 +114,8 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         non_leaf.initializeRoot(pid, mid_key, sibling_pid);
 
       non_leaf.write(end_pid, pf);
+      print_height();
+      cout << rootPid << endl;
     }
   }
   // End case if reached leaf
@@ -172,13 +174,24 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       //if (sibling_key == -1 || sibling_pid == -1)
         //return -1;
       
+      RC err;
       // At some non leaf node
-      RC err = non_leaf.insert(sibling_key, sibling_pid);
+      if (cur_height == treeHeight -1)
+        err = non_leaf.insert(sibling_key, sibling_pid);
+      else
+        err = non_leaf.insert(mid_key, sibling_pid);
+
       if (err == RC_NODE_FULL)
       {
         // Split up keys
         // Sibling_key set to mid key from non_leaf
-        non_leaf.insertAndSplit(sibling_key, sibling_pid, non_leaf_sibling, mid_key);
+        if (cur_height == treeHeight -1)
+          non_leaf.insertAndSplit(sibling_key, sibling_pid, non_leaf_sibling, mid_key);
+        else 
+        {
+          int prev_mid_key = mid_key;
+          non_leaf.insertAndSplit(prev_mid_key, sibling_pid, non_leaf_sibling, mid_key);
+        }
 
         // Write updated non leaf
         non_leaf.write(pid, pf);
