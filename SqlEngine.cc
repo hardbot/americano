@@ -195,7 +195,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       //go from min until max
       b_tree.locate(key_min, cursor);
 
-      if(less_than_not_equal)
+      if(greater_than_not_equal)
       {
         b_tree.readForward(cursor, key, rid);
       }
@@ -203,7 +203,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       while((b_tree.readForward(cursor, key, rid)==0) && key <= key_max)
       {
         //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
-        if(greater_than_not_equal && (key >= key_max))
+        if(less_than_not_equal && (key >= key_max))
         {
           break;
         }

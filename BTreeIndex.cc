@@ -131,8 +131,8 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         non_leaf.initializeRoot(pid, mid_key, sibling_pid);
 
       non_leaf.write(end_pid, pf);
-      //print_height();
-      //cout << rootPid << endl;
+      print_height();
+      cout << rootPid << endl;
     }
   }
   // End case if reached leaf
