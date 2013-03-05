@@ -19,7 +19,7 @@ using namespace std;
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
-  //SqlEngine::run(stdin);
+  SqlEngine::run(stdin);
 
 
   /* Test Cases for n = 6 */
@@ -351,6 +351,7 @@ int main()
 
   cout << "Passed all test casses for BTreeIndex insert!" << endl;
   */
+
   PageFile pf4;
   BTreeIndex tree1;
   RecordId pf4rid;
@@ -359,7 +360,7 @@ int main()
   //tree1.open("testmovie.idx", 'r');
   
   tree1.open("pf.test", 'w');
-  for (int j = 1; j < 21; j++)
+  for (int j = 1; j < 3618; j++)
   {
     tree1.insert(j, pf4rid);
   }
@@ -367,9 +368,25 @@ int main()
   tree1.print_height();
   pf4.open("pf.test", 'r');
   BTNonLeafNode nonLeafNode; 
-  nonLeafNode.read(7, pf4);
-  nonLeafNode.print_buffer();
+  BTLeafNode leafNode;
 
-  return 0;
+
+
+  nonLeafNode.print_buffer();
+  leafNode.read(1, pf4);
+  leafNode.print_buffer();
+    return 0;
+
+      /*nonLeafNode.read(1581, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(632, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(162, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(56, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(20, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(7, pf4);*/
 }
 
