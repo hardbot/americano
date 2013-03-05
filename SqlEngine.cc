@@ -13,6 +13,8 @@
 #include "Bruinbase.h"
 #include "SqlEngine.h"
 
+#include "BTreeIndex.h"
+
 using namespace std;
 
 // external functions and variables for load file and sql command parsing 
@@ -32,10 +34,52 @@ RC SqlEngine::run(FILE* commandline)
   return 0;
 }
 
+
+void SqlEngine::printTuple(const int& attr, const int& key, const string& value)
+{
+    // print the tuple 
+    switch (attr) {
+    case 1:  // SELECT key
+      fprintf(stdout, "%d\n", key);
+      break;
+    case 2:  // SELECT value
+      fprintf(stdout, "%s\n", value.c_str());
+      break;
+    case 3:  // SELECT *
+      fprintf(stdout, "%d '%s'\n", key, value.c_str());
+      break;
+    }
+}
+
+//The current implementation of select() performs a scan across the entire table to answer the query. 
+//Your last task will be to modify this behavior of select() to meet the following requirements:
+//If a SELECT query has one or more conditions on the key column and if the table has a B+tree, use the B+tree to help answer the query as follows:
+//-->If there exists an equality condition on key, you should always use the equality condition in looking up the index.
+//-->Queries which specify a range (like key >= 10 and key < 100) must use the index. 
+//----SqlEngine should try to avoid retrieving the tuples outside of this range from the underlying table by using the index.
+//-->You should not to use an inequality condition <> on key in looking up the B+tree.
+//-->You should avoid unnecessary page reads of getting information about the "value" column(s); 
+//----for example, if ONLY "key" column(s) exist in a SELECT statement, or if travesing leaf nodes on B+tree returns the count(*).
+//-->As a rule of thumb, you should avoid unecessary page reads if queries can be answered throgh the information stored in the nodes of a B+ Tree.
+
 RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 {
   RecordFile rf;   // RecordFile containing the table
   RecordId   rid;  // record cursor for table scanning
+
+  BTreeIndex b_tree;
+  //true when there is a key in the where clause
+  bool key_in_where = false;
+  //true when there is a '>' in the where clause
+  bool greater_than_not_equal = false;
+  //true when there is a '<' in the where clause
+  bool less_than_not_equal = false;
+  //used for locate
+  IndexCursor cursor;
+
+  int key_min=0;
+  int key_max=-1;
+
 
   RC     rc;
   int    key;     
@@ -48,6 +92,122 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
     return rc;
   }
+
+
+  //check for 'key' in WHERE clause
+  for(unsigned i = 0; i < cond.size(); i++)
+  {
+    //if there is a condition in where clause has a key
+    if(cond[i].attr==1)
+    {
+      key_in_where = true;
+
+      //if equal
+      if(cond[i].comp == SelCond::EQ)
+      {
+        key_min = key_max = atoi(cond[i].value);
+      }
+      //if greater than
+      else if(cond[i].comp == SelCond::GT)
+      {
+        greater_than_not_equal = true;
+        key_min = atoi(cond[i].value);
+      }
+      //if less than
+      else if(cond[i].comp == SelCond::LT)
+      {
+        less_than_not_equal = true;
+        key_max = atoi(cond[i].value);
+      }
+      //if less than or equal to
+      else if(cond[i].comp == SelCond::LE)
+      {
+        key_max = atoi(cond[i].value);
+      }
+      //if greater than or equal to
+      else if(cond[i].comp == SelCond::GE)
+      {
+        key_min = atoi(cond[i].value);
+      }
+    }
+  }
+
+  //open the B+ Tree
+  rc = b_tree.open(table + ".idx", 'r');
+
+  //if index file exists and there is a condition on key
+  if(rc==0 && key_in_where == true)
+  {
+    //if looking for just one tuple
+    if(key_min == key_max)
+    {
+      //place cursur on the tuple
+      b_tree.locate(key_max, cursor);
+
+      //read the tuple into key, rid
+      b_tree.readForward(cursor, key, rid);
+
+      //read the tuple at rid
+      if ((rc = rf.read(rid, key, value)) < 0) 
+      {
+        fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+        rf.close();
+        return rc;
+      }
+      SqlEngine::printTuple(attr, key, value);
+    }
+    //range where max is not specified but minimum is, ie key > 800
+    else if(key_max==-1)
+    {
+      b_tree.locate(key_min, cursor);
+
+      //if looking for greater than but not equal to, readForward one more
+      if(greater_than_not_equal)
+      {
+        b_tree.readForward(cursor, key, rid);
+      }
+
+      while(b_tree.readForward(cursor, key, rid))
+      {
+        if ((rc = rf.read(rid, key, value)) < 0) 
+        {
+          fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+          rf.close();
+          return rc;
+        }
+        printTuple(attr, key, value);
+      }
+
+    }
+    else if(key_min < key_max)
+    {
+      //go from min until max
+      b_tree.locate(key_min, cursor);
+
+      if(less_than_not_equal)
+      {
+        b_tree.readForward(cursor, key, rid);
+      }
+
+      while(b_tree.readForward(cursor, key, rid) && key <= key_max)
+      {
+        if(greater_than_not_equal && (key >= key_max))
+        {
+          break;
+        }
+        if ((rc = rf.read(rid, key, value)) < 0) 
+        {
+          fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+          rf.close();
+          return rc;
+        }
+        printTuple(attr, key, value);
+      }
+    }
+
+  }
+  else
+  {
 
   // scan the table file from the beginning
   rid.pid = rid.sid = 0;
@@ -121,7 +281,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     fprintf(stdout, "%d\n", count);
   }
   rc = 0;
-
+  }
   // close the table file and return
   exit_select:
   rf.close();
@@ -132,29 +292,70 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 {
   //for part 2A, assume index is FALSE
 
-  //initialize table_file with write functionality
-  RecordFile table_file = RecordFile(table+".tbl", 'w');
-
-  //initialize input stream from loadfile
-  ifstream load_file(loadfile.c_str());
-
-  //buffer for storing each line as a string
-  string line_buffer;
-
-  RecordId rec_id;
-  int line_count=0;
-  int key=0;
-  string value;
-
-  while(!load_file.eof())
+  if(!index)
   {
-    getline(load_file, line_buffer, '\n');
-    parseLoadLine(line_buffer, key, value);
-    if(table_file.append(key, value, rec_id ))
+    //initialize table_file with write functionality
+    RecordFile table_file = RecordFile(table+".tbl", 'w');
+
+    //initialize input stream from loadfile
+    ifstream load_file(loadfile.c_str());
+
+    //buffer for storing each line as a string
+    string line_buffer;
+
+    RecordId rec_id;
+    int line_count=0;
+    int key=0;
+    string value;
+
+    while(!load_file.eof())
     {
-      cout<<"Error appending to table line "<<line_count<<endl;
+      getline(load_file, line_buffer, '\n');
+      parseLoadLine(line_buffer, key, value);
+      if(table_file.append(key, value, rec_id ))
+      {
+        cout<<"Error appending to table line "<<line_count<<endl;
+      }
+      line_count++;
     }
-    line_count++;
+  }
+  else
+  {
+    //initialize table_file with write functionality
+    RecordFile table_file = RecordFile(table+".tbl", 'w');
+    BTreeIndex b_tree;
+    b_tree.open(table+".idx", 'w');
+
+    ifstream load_file(loadfile.c_str());
+
+    string line_buffer;
+
+    RecordId rec_id;
+    int line_count = 0; //remove when testing for time
+    int key=0;
+    string value;
+
+    while(!load_file.eof())
+    {
+      getline(load_file, line_buffer, '\n');
+      parseLoadLine(line_buffer, key, value);
+      if(table_file.append(key, value, rec_id ))
+      {
+        cout<<"Error appending to table line "<<line_count<<endl;
+      }
+
+      if(b_tree.insert(key, rec_id) != 0)
+      {
+        cout<<"Error inserting into B+ Tree line "<<line_count<<endl;
+      }
+
+      line_count++; //remove when testing for time
+
+    }
+
+    b_tree.close();
+    cout<<"Reached end of load file INDEX with line count"<<line_count<<endl;
+
   }
 
  // cout<<"Reached end of load file with line count"<<line_count<<endl;

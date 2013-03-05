@@ -19,99 +19,11 @@ using namespace std;
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
-  //SqlEngine::run(stdin);
+  SqlEngine::run(stdin);
 
-  /* Test cases for n = 3
-  // Test file
-  BTLeafNode leaf;  
-  RecordId rid;
-  rid.pid = 5;
-  rid.sid = 10;
-  //leaf.print_leaf_node();
-  // first insert
-  assert(leaf.insert(1,rid) == 0);
-  //leaf.print_leaf_node();
-  rid.pid = 6;
-  rid.sid = 11;
-
-  // second insert
-  assert(leaf.insert(2,rid) == 0);
-  //leaf.print_leaf_node();
-  rid.pid = 7;
-  rid.sid = 12;
-
-  // third insert
-  assert(leaf.insert(0,rid) < 0);
-  assert(leaf.insert(1,rid) < 0);
-  assert(leaf.insert(2,rid) < 0);
-  assert(leaf.insert(3,rid) < 0);
-  assert(leaf.insert(4,rid) < 0);
-  assert(leaf.insert(5,rid) < 0);
-  //leaf.print_leaf_node();
-  
-  //Test 2
-  BTLeafNode leaf2;
-  rid.pid = 8;
-  rid.sid = 12;
-  //leaf2.print_leaf_node();
-  // first insert
-  assert(leaf2.insert(5,rid) == 0);
-  //leaf2.print_leaf_node();
-  rid.pid = 9;
-  rid.sid = 13;
-  // second insert with smaller key
-  assert(leaf2.insert(4,rid) == 0);
-  //leaf2.print_leaf_node();
-  
-  // third insert
-  assert(leaf2.insert(0,rid) < 0);
-  assert(leaf2.insert(1,rid) < 0);
-  assert(leaf2.insert(2,rid) < 0);
-  assert(leaf2.insert(3,rid) < 0);
-  assert(leaf2.insert(4,rid) < 0);
-  assert(leaf2.insert(5,rid) < 0);
-  assert(leaf2.insert(6,rid) < 0);
-  assert(leaf2.insert(7,rid) < 0);
-  cout << "Passed all test cases for insert!\n" << endl;
-
-  // Test 3
-  BTLeafNode leaf3;
-  rid.pid = 1;
-  rid.sid = 2;
-  int eid = -1;
-  // Locate in empty node
-  assert(leaf3.locate(1, eid) < 0);
-  assert(leaf3.insert(1,rid) == 0);
-  assert(leaf3.locate(1, eid) == 0);
-  assert(leaf3.locate(2, eid) < 0);
-  assert(eid < 0);
-  // Locate something that has not been inserted
-  assert(leaf3.insert(2,rid) == 0);
-  assert(leaf3.locate(2, eid) == 0);
-  assert(leaf3.insert(3,rid) < 0);
-  assert(leaf3.locate(3, eid) < 0);
-  assert(leaf3.locate(2, eid) == 0);
-  assert(eid == 2);
-
-  BTLeafNode leaf31;
-  assert(leaf31.insert(5,rid) == 0);
-  assert(leaf31.locate(3,eid) == 0);
-  assert(leaf31.insert(9,rid) == 0);
-  assert(leaf31.locate(3,eid) == 0);
-  assert(eid == 5);
-  assert(leaf31.locate(8,eid) == 0);
-  assert(eid == 9);
-  eid = 1;
-  assert(leaf31.locate(6,eid) == 0);
-  cout << eid << endl;
-  assert(eid == 9);
-  assert(leaf31.locate(9,eid) == 0);
-  assert(eid == 9);
-  assert(leaf31.locate(10,eid) < 0);
-  cout << "Passed all test cases for locate!\n" << endl;
-  */
 
   /* Test Cases for n = 6 */
+  /*
   if (MAX_NUM_POINTERS == 6)
   {
   RecordId rid;
@@ -366,44 +278,6 @@ int main()
   //cout<<"Number of elements in sibling 2: "<<siblingn.getKeyCount()<<endl;
   cout<<"Passed all test cases for BTNonLeafNode insertAndSplit!\n";
 
-
-
-/*
-
-
-  pageid = -1;
-  assert(nonleaf3.locateChildPtr(1,pageid) < 0);
-  assert(pageid == -1);
-  assert(nonleaf3.insert(1,pid2) == 0);
-  //leaf3.print_buffer();
-  assert(nonleaf3.locateChildPtr(1,pageid) == 0);
-  assert(pageid == 0);
-  assert(nonleaf3.insert(3,pid2) == 0);
-  assert(nonleaf3.locateChildPtr(3,pageid) == 0);
-  assert(pageid < 0);
-  assert(nonleaf3.locateChildPtr(2,pageid) == 0);
-  assert(pageid < 0);
-  assert(nonleaf3.locateChildPtr(0,pageid) == 0);
-  assert(pageid == 0);
-  assert(nonleaf3.locateChildPtr(-1,pageid) < 0);
-  assert(nonleaf3.insert(5,pid2) == 0);
-  assert(nonleaf3.insert(9,pid2) == 0);
-
-  assert(nonleaf3.insert(12,pid2) == 0);
-  assert(nonleaf3.insert(15,pid2) < 0);
-  assert(nonleaf3.locateChildPtr(4,pageid) == 0);
-  assert(pageid == 2);
-  assert(nonleaf3.locateChildPtr(7,pageid) == 0);
-  assert(pageid == 3);
-  assert(nonleaf3.locateChildPtr(13,pageid) < 0);
-  assert(pageid == 3);
-  assert(nonleaf3.locateChildPtr(12,pageid) == 0);
-  assert(pageid == 4);
-  pageid = -1;
-  assert(nonleaf3.locateChildPtr(11,pageid) == 0);
-  assert(pageid == 4);
-  cout << "Passed all test cases for BTNonLeafNode locateChildPtr!" << endl;
-*/
   // Test cases for BTreeIndex Insert
   BTreeIndex tree1;
   RecordId t_rid;
@@ -435,15 +309,15 @@ int main()
   assert(tree1.insert(19, t_rid) == 0);
   //tree1.print_height();
   assert(tree1.insert(20, t_rid) == 0);
-  /*
-  assert(tree1.insert(21, t_rid) == 0);
-  assert(tree1.insert(22, t_rid) == 0);
-  assert(tree1.insert(23, t_rid) == 0);
-  assert(tree1.insert(24, t_rid) == 0);
-  assert(tree1.insert(25, t_rid) == 0);
-  assert(tree1.insert(26, t_rid) == 0);
-  assert(tree1.insert(27, t_rid) == 0);
-  */
+  
+  //assert(tree1.insert(21, t_rid) == 0);
+  //assert(tree1.insert(22, t_rid) == 0);
+  //assert(tree1.insert(23, t_rid) == 0);
+  //assert(tree1.insert(24, t_rid) == 0);
+  //assert(tree1.insert(25, t_rid) == 0);
+  //assert(tree1.insert(26, t_rid) == 0);
+  //assert(tree1.insert(27, t_rid) == 0);
+  
   BTNonLeafNode nonLeafNode, nln2,nln3;
   BTLeafNode leafNode,lfn2,lfn3;
   PageFile pf4;
@@ -473,18 +347,10 @@ int main()
   int keypf4;
   RecordId ridpf4;
 
-  /*
-  for (int i = 0; i < 19; i++)
-  {
-    tree1.readForward(cursor, keypf4, ridpf4);
-    tree1.printIndex(cursor);
-  }
-  */
-
   tree1.close();
 
   cout << "Passed all test casses for BTreeIndex insert!" << endl;
-
+*/
   return 0;
 }
 
