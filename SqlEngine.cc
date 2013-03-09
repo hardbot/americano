@@ -86,7 +86,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   RC     rc;
   int    key;     
   string value;
-  int    count;
+  int    count=0;
   int    diff;
 
   // open the table file
@@ -155,7 +155,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       b_tree.readForward(cursor, key, rid);
       cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
 
-      
+
       //read the tuple at rid
       if ((rc = rf.read(rid, key, value)) < 0) 
       {
@@ -164,7 +164,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         return rc;
       }
       if(key==key_max)
-        SqlEngine::printTuple(attr, key, value);
+       {
+        printTuple(attr, key, value);
+        count++;
+        }
     }
     //range where max is not specified but minimum is, ie key > 800
     else if(key_max==-1)
@@ -180,6 +183,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
       while(b_tree.readForward(cursor, key, rid)==0)
       {
+        cout<<"Cursor Key: "<<key<<endl;
         cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
         if ((rc = rf.read(rid, key, value)) < 0) 
         {
@@ -188,6 +192,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
           return rc;
         }
         printTuple(attr, key, value);
+        count++;
       }
 
     }
@@ -200,6 +205,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       {
         b_tree.readForward(cursor, key, rid);
       }
+
 
       while((b_tree.readForward(cursor, key, rid)==0) && key <= key_max)
       {
@@ -215,8 +221,16 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
           return rc;
         }
         printTuple(attr, key, value);
+        count++;
       }
     }
+     // print matching tuple count if "select count(*)"
+    if (attr == 4) {
+      fprintf(stdout, "%d\n", count);
+    }
+
+    rf.close();
+
   }
   else
   {
