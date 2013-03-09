@@ -131,8 +131,8 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         non_leaf.initializeRoot(pid, mid_key, sibling_pid);
 
       non_leaf.write(end_pid, pf);
-      print_height();
-      cout << rootPid << endl;
+      //print_height();
+      //cout << rootPid << endl;
     }
   }
   // End case if reached leaf
@@ -142,7 +142,7 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     if (pf.endPid() > 1)
       getLeaf(pid, leaf);
 
-    leaf.print_buffer();
+    //leaf.print_buffer();
 
     // Split keys if overflow 
     RC err = leaf.insert(key, rid);

@@ -390,6 +390,42 @@ int main()
   tree1.close();
 
   cout << "Passed all test cases for BTreeIndex insert!" << endl;
+/*
+  PageFile pf4;
+  BTreeIndex tree1;
+  RecordId pf4rid;
+  pf4rid.pid = 2;
+  pf4rid.sid = 1;
+  //tree1.open("testmovie.idx", 'r');
+  
+  tree1.open("pf.test", 'w');
+  for (int j = 1; j < 3618; j++)
+  {
+    tree1.insert(j, pf4rid);
+  }
+  cout<<"Tree height: "<<endl;
+  tree1.print_height();
+  pf4.open("pf.test", 'r');
+  BTNonLeafNode nonLeafNode; 
+  BTLeafNode leafNode;
 
+
+
+  nonLeafNode.print_buffer();
+  leafNode.read(1, pf4);
+  leafNode.print_buffer();
+    return 0;
+
+      /*nonLeafNode.read(1581, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(632, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(162, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(56, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(20, pf4);
+  nonLeafNode.print_buffer();
+  nonLeafNode.read(7, pf4);*/
 }
 
