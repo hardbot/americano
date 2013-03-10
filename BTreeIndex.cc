@@ -19,6 +19,7 @@ using namespace std;
 BTreeIndex::BTreeIndex()
 {
     rootPid = -1;
+    lf_cache_pid = -1;
 }
 
 /*
@@ -282,10 +283,10 @@ RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& c
     BTLeafNode leaf;
     BTNonLeafNode non_leaf;
     int eid = 0, child_pid = 0;
-    cout<<"Tree height: "<<treeHeight<<endl;
+    //cout<<"Tree height: "<<treeHeight<<endl;
     if (cur_height == treeHeight)
     {
-      cout<<"GOT THIS FAR IN LOCATE!"<<endl;
+      //cout<<"GOT THIS FAR IN LOCATE!"<<endl;
       getLeaf(pid, leaf);
       leaf.locate(searchKey, eid);
       cursor.pid = pid;
@@ -321,6 +322,12 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     BTLeafNode lf;
     getLeaf(cursor.pid, lf);
 
+    // Set output values
+    key = (lf.get_element(cursor.eid)).key;
+    rid = (lf.get_element(cursor.eid)).rec_id;
+
+    cursor.eid += 1;
+
     // See if eid is in current leaf node
     if (lf.getKeyCount() <= cursor.eid)
     {
@@ -329,14 +336,9 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
         return -1;
       cursor.pid = lf.getNextNodePtr();
       cursor.eid = 0;
-      getLeaf(cursor.pid, lf);
     }
-    // Set output values
-    key = (lf.get_element(cursor.eid)).key;
-    rid = (lf.get_element(cursor.eid)).rec_id;
 
     // Iterate eid to go to to next element
-    cursor.eid += 1;
     return 0;
 }
 

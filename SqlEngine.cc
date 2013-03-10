@@ -222,6 +222,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       //}
 
 
+
       while((b_tree.readForward(cursor, key, rid)==0) && key <= key_max)
       {
         if(greater_than_not_equal && key==key_min)
