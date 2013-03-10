@@ -316,6 +316,7 @@ int main()
   assert(pageid == 4);
   cout << "Passed all test cases for BTNonLeafNode locateChildPtr!" << endl;
 */
+  /*
   // Test cases for BTreeIndex Insert
   /*
   BTreeIndex tree1;
@@ -323,8 +324,12 @@ int main()
   t_rid.pid = 1;
   t_rid.sid = 2;
   tree1.open("pf.test", 'w');
+<<<<<<< HEAD
   */
 
+=======
+*/
+>>>>>>> 59f2cdf28f1aa7079cfa0bd4eebab06410b47137
   //tree1.init();
   //tree1.print_height();
   /*
@@ -358,7 +363,7 @@ int main()
   assert(tree1.insert(26, t_rid) == 0);
   assert(tree1.insert(27, t_rid) == 0);
   */
-
+/*
     //assert(tree1.insert(0, t_rid) == 0);
   /*
   tree1.insert(242, t_rid);
@@ -396,7 +401,11 @@ int main()
   tree1.close();
   */
 
+<<<<<<< HEAD
   //cout << "Passed all test cases for BTreeIndex insert!" << endl;
+=======
+  cout << "Passed all test cases for BTreeIndex insert!" << endl;*/
+>>>>>>> 59f2cdf28f1aa7079cfa0bd4eebab06410b47137
 /*
   PageFile pf4;
   BTreeIndex tree1;

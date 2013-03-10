@@ -108,29 +108,39 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       if(cond[i].comp == SelCond::EQ)
       {
         key_min = key_max = atoi(cond[i].value);
-        cout<<"Value of key_min: "<<key_min<<endl;
+        //cout<<"Value of key_min: "<<key_min<<endl;
       }
       //if greater than
       else if(cond[i].comp == SelCond::GT)
       {
         greater_than_not_equal = true;
-        key_min = atoi(cond[i].value);
+        int new_key_min = atoi(cond[i].value);
+        if(new_key_min>key_min)
+          key_min = new_key_min;
       }
       //if less than
       else if(cond[i].comp == SelCond::LT)
       {
         less_than_not_equal = true;
-        key_max = atoi(cond[i].value);
+        int new_key_max = atoi(cond[i].value);
+        if(new_key_max < key_max)
+        {
+          key_max = new_key_max;
+        }
       }
       //if less than or equal to
       else if(cond[i].comp == SelCond::LE)
       {
-        key_max = atoi(cond[i].value);
+        int new_key_max = atoi(cond[i].value);
+        if(new_key_max < key_max)
+          key_max = new_key_max;
       }
       //if greater than or equal to
       else if(cond[i].comp == SelCond::GE)
       {
-        key_min = atoi(cond[i].value);
+        int new_key_min = atoi(cond[i].value);
+        if(new_key_min >key_min)
+          key_min = new_key_min;
       }
     }
   }
@@ -145,7 +155,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     //if looking for just one tuple
     if(key_min == key_max)
     {
-      //cout<<"Got this far!"<<endl;
+    //  cout<<"Got this far!"<<endl;
       //place cursur on the tuple
       b_tree.locate(key_max, cursor);
 
@@ -173,17 +183,22 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     else if(key_max==-1)
     {
       b_tree.locate(key_min, cursor);
-      //cout<<"Got past locate with key_min: "<<key_min<<endl;
+     // cout<<"Got past locate with key_min: "<<key_min<<endl;
 
       //if looking for greater than but not equal to, readForward one more
-      if(greater_than_not_equal)
-      {
-        b_tree.readForward(cursor, key, rid);
-      }
+      //if(greater_than_not_equal)
+      //{
+      //  b_tree.readForward(cursor, key, rid);
+      //}
+
 
       while(b_tree.readForward(cursor, key, rid)==0)
       {
-        //cout<<"Cursor Key: "<<key<<endl;
+        if(greater_than_not_equal && key == key_min)
+        {
+          continue;
+        }
+       // cout<<"Cursor Key: "<<key<<endl;
         //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
         if ((rc = rf.read(rid, key, value)) < 0) 
         {
@@ -201,14 +216,19 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       //go from min until max
       b_tree.locate(key_min, cursor);
 
-      if(greater_than_not_equal)
-      {
-        b_tree.readForward(cursor, key, rid);
-      }
+      //if(greater_than_not_equal)
+      //{
+      //  b_tree.readForward(cursor, key, rid);
+      //}
+
 
 
       while((b_tree.readForward(cursor, key, rid)==0) && key <= key_max)
       {
+        if(greater_than_not_equal && key==key_min)
+        {
+          continue;
+        }
         //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
         if(less_than_not_equal && (key >= key_max))
         {
@@ -334,8 +354,10 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
     int key=0;
     string value;
 
+    //while(!load_file.eof())
     while(getline(load_file, line_buffer))
     {
+      //getline(load_file, line_buffer, '\n');
       parseLoadLine(line_buffer, key, value);
       if(table_file.append(key, value, rec_id ))
       {
@@ -360,8 +382,10 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
     int key=0;
     string value;
 
+    //while(!load_file.eof())
     while(getline(load_file, line_buffer))
     {
+     // getline(load_file, line_buffer, '\n');
       parseLoadLine(line_buffer, key, value);
       if(table_file.append(key, value, rec_id ))
       {
