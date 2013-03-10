@@ -75,6 +75,9 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   bool greater_than_not_equal = false;
   //true when there is a '<' in the where clause
   bool less_than_not_equal = false;
+
+  bool not_equal_found = false;
+
   //used for locate
   IndexCursor cursor;
   cursor.pid =-1;
@@ -116,33 +119,49 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         greater_than_not_equal = true;
         int new_key_min = atoi(cond[i].value);
         if(new_key_min>key_min)
+        {
           key_min = new_key_min;
+        }
+       // cout<<"Key_min for GT clause is now: "<<key_min<<endl;
       }
       //if less than
       else if(cond[i].comp == SelCond::LT)
       {
         less_than_not_equal = true;
         int new_key_max = atoi(cond[i].value);
-        if(new_key_max < key_max)
+        if(new_key_max < key_max || key_max == -1)
         {
           key_max = new_key_max;
         }
+        //cout<<"Key_max for LT clause is now: "<<key_max<<endl;
       }
       //if less than or equal to
       else if(cond[i].comp == SelCond::LE)
       {
         int new_key_max = atoi(cond[i].value);
-        if(new_key_max < key_max)
+        if(new_key_max < key_max || key_max == -1)
+        {
           key_max = new_key_max;
+        }
+        //cout<<"Key_max for LE clause is now: "<<key_min<<endl;
       }
       //if greater than or equal to
       else if(cond[i].comp == SelCond::GE)
       {
         int new_key_min = atoi(cond[i].value);
         if(new_key_min >key_min)
+        {
           key_min = new_key_min;
+        }
+        //cout<<"Key_min for GE clause is now: "<<key_min<<endl;
       }
     }
+
+    if(cond[i].comp==SelCond::NE)
+    {
+      not_equal_found = true;
+    }
+
   }
 
   //open the B+ Tree
@@ -150,7 +169,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   //cout<<"RC value from opening B+ Tree: "<<rc<<endl;
 
   //if index file exists and there is a condition on key
-  if(rc==0 && key_in_where == true)
+  if((rc==0) && (key_in_where == true) && (not_equal_found==false) && ((key_min<=key_max)||key_max==-1))
   {
     //if looking for just one tuple
     if(key_min == key_max)
@@ -166,18 +185,22 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
 
 
-      //read the tuple at rid
-      if ((rc = rf.read(rid, key, value)) < 0) 
+      //if SELECT value or SELECT *
+      if(attr==2 || attr ==3)
       {
-        fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
-        rf.close();
-        return rc;
+        //read the tuple at rid
+        if ((rc = rf.read(rid, key, value)) < 0) 
+        {
+          fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+          rf.close();
+          return rc;
+        }
       }
       if(key==key_max)
-       {
+      {
         printTuple(attr, key, value);
         count++;
-        }
+      }
     }
     //range where max is not specified but minimum is, ie key > 800
     else if(key_max==-1)
@@ -194,17 +217,20 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
       while(b_tree.readForward(cursor, key, rid)==0)
       {
-        if(greater_than_not_equal && key == key_min)
+        if((greater_than_not_equal==true) && (key == key_min))
         {
           continue;
         }
        // cout<<"Cursor Key: "<<key<<endl;
         //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
-        if ((rc = rf.read(rid, key, value)) < 0) 
+        if(attr ==2 || attr==3)
         {
-          fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
-          rf.close();
-          return rc;
+          if ((rc = rf.read(rid, key, value)) < 0) 
+          {
+            fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+            rf.close();
+            return rc;
+          }
         }
         printTuple(attr, key, value);
         count++;
@@ -223,22 +249,25 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
 
 
-      while((b_tree.readForward(cursor, key, rid)==0) && key <= key_max)
+      while((b_tree.readForward(cursor, key, rid)==0))
       {
-        if(greater_than_not_equal && key==key_min)
+        if((greater_than_not_equal==true) && (key==key_min))
         {
           continue;
         }
         //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
-        if(less_than_not_equal && (key >= key_max))
+        if((less_than_not_equal==true) && (key >= key_max))
         {
           break;
         }
-        if ((rc = rf.read(rid, key, value)) < 0) 
+        if(attr==2 || attr==3)
         {
-          fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
-          rf.close();
-          return rc;
+          if ((rc = rf.read(rid, key, value)) < 0) 
+          {
+            fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+            rf.close();
+            return rc;
+          }
         }
         printTuple(attr, key, value);
         count++;
@@ -402,7 +431,7 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
     }
 
     b_tree.close();
-    cout<<"Reached end of load file INDEX with line count"<<line_count<<endl;
+   // cout<<"Reached end of load file INDEX with line count"<<line_count<<endl;
 
   }
 
