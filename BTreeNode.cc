@@ -58,11 +58,11 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
   // Check if node is full
   if(num_elements >= MAX_NUM_POINTERS-1)
     return RC_NODE_FULL;
-  if(locate(key, eid) == 0 && get_element(eid).key == key)
+  //if(locate(key, eid) == 0 && get_element(eid).key == key)
   {
-    cout << "DUPLICATE DETECTED" << endl;
-    exit(1);
-    return -1;
+    //cout << "DUPLICATE DETECTED" << endl;
+    //exit(1);
+    //return -1;
   }
 
   // Set element to insert
@@ -129,11 +129,11 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   int half = (num_overflow+1)/2;
   LeafNodeElement tmp;
   int eid = -1;
-  if(locate(key, eid) == 0 && get_element(eid).key == key)
+  //if(locate(key, eid) == 0 && get_element(eid).key == key)
   {
-    cout << "DUPLICATE DETECTED" << endl;
-    exit(1);
-    return -1;
+    //cout << "DUPLICATE DETECTED" << endl;
+    //exit(1);
+    //return -1;
   }
 
   // Check for negative parameters

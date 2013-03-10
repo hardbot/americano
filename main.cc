@@ -318,12 +318,18 @@ int main()
 */
   /*
   // Test cases for BTreeIndex Insert
+  /*
   BTreeIndex tree1;
   RecordId t_rid;
   t_rid.pid = 1;
   t_rid.sid = 2;
   tree1.open("pf.test", 'w');
+<<<<<<< HEAD
+  */
+
+=======
 */
+>>>>>>> 59f2cdf28f1aa7079cfa0bd4eebab06410b47137
   //tree1.init();
   //tree1.print_height();
   /*
@@ -359,23 +365,26 @@ int main()
   */
 /*
     //assert(tree1.insert(0, t_rid) == 0);
+  /*
+  tree1.insert(242, t_rid);
   BTNonLeafNode nonLeafNode, nln2,nln3;
   BTLeafNode leafNode,lfn2,lfn3;
   PageFile pf4;
-  //pf4.open("pf.test", 'r');
+  pf4.open("pf.test", 'r');
   IndexCursor cursor;
 
   nonLeafNode.read(3, pf4);
-  leafNode.read(2,pf4);
+  leafNode.read(1,pf4);
   nln2.read(7,pf4);
   nln3.read(11,pf4);
+  */
   //lfn2.read(8,pf4);
   //lfn3.read(0,pf4);
 
-  nonLeafNode.print_buffer();
-  nln2.print_buffer();
-  nln3.print_buffer();
-  leafNode.print_buffer();
+  //nonLeafNode.print_buffer();
+  //nln2.print_buffer();
+  //nln3.print_buffer();
+  //leafNode.print_buffer();
   //lfn2.print_buffer();
   //lfn3.print_buffer();
 
@@ -383,14 +392,20 @@ int main()
   //tree1.printTree();
   //tree1.print_height();
 
-  tree1.locate(1, cursor);
+/*
+  tree1.locate(242, cursor);
   //tree1.printIndex(cursor);
   int keypf4;
   RecordId ridpf4;
 
   tree1.close();
+  */
 
+<<<<<<< HEAD
+  //cout << "Passed all test cases for BTreeIndex insert!" << endl;
+=======
   cout << "Passed all test cases for BTreeIndex insert!" << endl;*/
+>>>>>>> 59f2cdf28f1aa7079cfa0bd4eebab06410b47137
 /*
   PageFile pf4;
   BTreeIndex tree1;
