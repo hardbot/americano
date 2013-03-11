@@ -319,10 +319,10 @@ RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& c
     {
       //cout<<"GOT THIS FAR IN LOCATE!"<<endl;
       getLeaf(pid, leaf);
-      leaf.locate(searchKey, eid);
+      RC ret = leaf.locate(searchKey, eid);
       cursor.pid = pid;
       cursor.eid = eid;
-      return 0;
+      return ret;
     }
     else
     {
