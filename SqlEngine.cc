@@ -263,6 +263,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             }
           }
         }
+        else{
+                printTuple(attr, key, value);
+                count++;
+        }
       }
     }
     //range where max is not specified but minimum is, ie key > 800
@@ -311,6 +315,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             }
           }
 
+        }
+        else{
+                printTuple(attr, key, value);
+                count++;
         }
       }
 
@@ -362,6 +370,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
               }
             }
           }
+        }
+        else{
+                printTuple(attr, key, value);
+                count++;
         }
 
       }
