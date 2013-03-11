@@ -56,14 +56,10 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
   if (key < 0)
     return RC_INVALID_ATTRIBUTE;
   // Check if node is full
-  if(num_elements >= MAX_NUM_POINTERS-1)
+  if(num_elements >= MAX_NUM_LEAF_POINTERS-1)
     return RC_NODE_FULL;
-  //if(locate(key, eid) == 0 && get_element(eid).key == key)
-  {
-    //cout << "DUPLICATE DETECTED" << endl;
-    //exit(1);
-    //return -1;
-  }
+  if(rid.pid < 0 || rid.sid <0)
+    return RC_INVALID_RID;
 
   // Set element to insert
   element.rec_id.pid = rid.pid;
@@ -129,12 +125,6 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   int half = (num_overflow+1)/2;
   LeafNodeElement tmp;
   int eid = -1;
-  //if(locate(key, eid) == 0 && get_element(eid).key == key)
-  {
-    //cout << "DUPLICATE DETECTED" << endl;
-    //exit(1);
-    //return -1;
-  }
 
   // Check for negative parameters
   if (key < 0)
@@ -142,6 +132,8 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
   // Check if sibling is empty
   if (sibling.getKeyCount() != 0)
     return RC_INVALID_ATTRIBUTE;
+  if (rid.sid < 0 || rid.pid < 0)
+    return RC_INVALID_RID;
 
   // Hold all overflow elements in temp array
   LeafNodeElement *overflow = new LeafNodeElement[num_overflow];
@@ -241,7 +233,7 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 { 
   //error
-  if( eid > getKeyCount() ) 
+  if( eid > getKeyCount() || eid < 0) 
     return RC_INVALID_ATTRIBUTE;
   LeafNodeElement lfe = get_element(eid);
 
@@ -341,15 +333,8 @@ RC BTNonLeafNode::insert(int key, PageId pid)
   if(pid < 0)
     return RC_INVALID_PID;
   //check if node is full
-  if(num_elements >= MAX_NUM_POINTERS-1)
+  if(num_elements >= MAX_NUM_NONLEAF_POINTERS-1)
     return RC_NODE_FULL;
-  int eid = -1;
-  //if(locate(key, eid) == 0 && get_element(eid).key == key)
-  {
-    //cout << "DUPLICATE DETECTED" << endl;
-    //exit(1);
-    //return -1;
-  }
 
   // Set element to insert
   element.pid = pid;
@@ -417,13 +402,6 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
   // Check if sibling is empty
   if (sibling.getKeyCount() != 0)
     return RC_INVALID_ATTRIBUTE;
-  //int eid = -1;
-  //if(locate(key, eid) == 0 && get_element(eid).key == key)
-  //{
-    //cout << "DUPLICATE DETECTED" << endl;
-    //exit(1);
-    //return -1;
-  //}
 
   // Hold all overflow elements in temp array
   NonLeafNodeElement *overflow = new NonLeafNodeElement[num_overflow];
@@ -535,12 +513,13 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  */
 RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
 {
+  RC ret;
   // Pointer to pageid greater than greatest key
   // Always set to eid = 1
   memcpy(buffer+4, &pid1, sizeof(int));
   // Rest of root
-  insert(key, pid2);
-  return 0;
+  ret = insert(key, pid2);
+  return ret;
 }
 
 NonLeafNodeElement BTNonLeafNode::get_element(int eid)
