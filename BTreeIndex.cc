@@ -19,7 +19,7 @@ using namespace std;
 BTreeIndex::BTreeIndex()
 {
     rootPid = -1;
-    lf_cache_pid = -1;
+   // lf_cache_pid = -1;
 }
 
 /*
