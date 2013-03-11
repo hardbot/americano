@@ -291,12 +291,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     {
     //  cout<<"Got this far!"<<endl;
       //place cursur on the tuple
-      if(b_tree.locate(key_max, cursor) <0) 
-      {
-       // fprintf(stderr, "Error: while locating tuple "<<key_min<<" from table %s\n", table.c_str());
-        rf.close();
-        b_tree.close();
-      }
+      b_tree.locate(key_max, cursor);
 
       //cout<<"Got past locate!"<<endl;
 
@@ -340,12 +335,13 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     //range where max is not specified but minimum is, ie key > 800
     else if(key_max==-1)
     {
-      if(b_tree.locate(key_min, cursor) < 0)
+      b_tree.locate(key_min, cursor);
+        /*
       {
         rf.close();
         b_tree.close();
         return -1;
-      }
+      }*/
 
       while(b_tree.readForward(cursor, key, rid)==0)
       {
@@ -389,19 +385,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     else if(key_min < key_max)
     {
       //go from min until max
-      if(b_tree.locate(key_min, cursor))
-      {
-        rf.close();
-        b_tree.close();
-        return -1;
-      }
-
-      //if(greater_than_not_equal)
-      //{
-      //  b_tree.readForward(cursor, key, rid);
-      //}
-
-
+      b_tree.locate(key_min, cursor);
 
       while((b_tree.readForward(cursor, key, rid)==0))
       {
@@ -414,6 +398,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         {
           break;
         }
+
+        if(key> key_max)
+        {
+          break;
+        }
+
         if(attr==2 || attr==3)
         {
           if ((rc = rf.read(rid, key, value)) < 0) 
