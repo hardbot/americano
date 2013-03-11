@@ -282,7 +282,6 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
   //open the B+ Tree
   rc = b_tree.open(table + ".idx", 'r');
-  //cout<<"RC value from opening B+ Tree: "<<rc<<endl;
 
   //if index file exists and there is a condition on key
   if((rc==0) && (key_in_where == true||attr==4) && (not_equal_found==false) && (should_not_index==false) && ((key_min<=key_max)||key_max==-1))
@@ -292,16 +291,19 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     {
     //  cout<<"Got this far!"<<endl;
       //place cursur on the tuple
-      b_tree.locate(key_max, cursor);
+      if(b_tree.locate(key_max, cursor) <0) 
+      {
+       // fprintf(stderr, "Error: while locating tuple "<<key_min<<" from table %s\n", table.c_str());
+        rf.close();
+        b_tree.close();
+      }
 
       //cout<<"Got past locate!"<<endl;
 
       //read the tuple into key, rid
       b_tree.readForward(cursor, key, rid);
-      //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
 
-
-      //if SELECT value or SELECT *
+      //only read if SELECT value or SELECT *
       if(attr==2 || attr ==3)
       {
         //read the tuple at rid
@@ -338,15 +340,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     //range where max is not specified but minimum is, ie key > 800
     else if(key_max==-1)
     {
-      b_tree.locate(key_min, cursor);
-     // cout<<"Got past locate with key_min: "<<key_min<<endl;
-
-      //if looking for greater than but not equal to, readForward one more
-      //if(greater_than_not_equal)
-      //{
-      //  b_tree.readForward(cursor, key, rid);
-      //}
-
+      if(b_tree.locate(key_min, cursor) < 0)
+      {
+        rf.close();
+        b_tree.close();
+        return -1;
+      }
 
       while(b_tree.readForward(cursor, key, rid)==0)
       {
@@ -354,8 +353,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         {
           continue;
         }
-       // cout<<"Cursor Key: "<<key<<endl;
-        //cout<<"Rid.sid: "<<rid.sid<<" Rid.pid: "<<rid.pid<<endl;
+
         if(attr ==2 || attr==3)
         {
           if ((rc = rf.read(rid, key, value)) < 0) 
@@ -380,7 +378,6 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
               }
             }
           }
-
         }
         else{
                 printTuple(attr, key, value);
@@ -392,7 +389,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     else if(key_min < key_max)
     {
       //go from min until max
-      b_tree.locate(key_min, cursor);
+      if(b_tree.locate(key_min, cursor))
+      {
+        rf.close();
+        b_tree.close();
+        return -1;
+      }
 
       //if(greater_than_not_equal)
       //{
@@ -455,7 +457,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   }
   else
   {
-
+    //code intially provided by skeleton
     rid.pid = rid.sid = 0;
     count = 0;
     while (rid < rf.endRid()) {
