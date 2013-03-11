@@ -52,13 +52,15 @@ void SqlEngine::printTuple(const int& attr, const int& key, const string& value)
     }
 }
 
+//helper function for returning true or false on whether a Value is valid based on a condition
+//in the where clause applying to the value attribute
 bool SqlEngine::isValidValue(const char * value, const char * cond_value, SelCond::Comparator comp_type)
 {
 
         int index_diff;
         index_diff = strcmp(value, cond_value);
 
-        // skip the tuple if any condition is not met
+        // return false if the conditions are not met
         switch (comp_type) {
           case SelCond::EQ:
            if (index_diff != 0) return false;
@@ -80,6 +82,7 @@ bool SqlEngine::isValidValue(const char * value, const char * cond_value, SelCon
            if (index_diff > 0) return false;
            break;
         }
+
         return true;
 }
 
@@ -100,9 +103,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   RecordFile rf;   // RecordFile containing the table
   RecordId   rid;  // record cursor for table scanning
 
+  //actual b_tree that we will use
   BTreeIndex b_tree;
   //true when there is a key in the where clause
   bool key_in_where = false;
+
+  //true when there is a value in the where clause
   bool value_in_where = false;
 
   //true when there is a '>' in the where clause
@@ -110,17 +116,22 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   //true when there is a '<' in the where clause
   bool less_than_not_equal = false;
 
+  //true when there is a '<>' in the where clause
   bool not_equal_found = false;
 
+  //true if finds an equal statements in where clause
   bool one_equal_statement = false;
+  //true if more than one equal statement in where clause
   bool more_than_one_equal_statement = false;
-
+  //true if we should not run index due to queries that do not need to be indexed 
+  bool should_not_index = false;
 
   //used for locate
   IndexCursor cursor;
   cursor.pid =-1;
   cursor.eid =0;
 
+  //used to point to the min and max of ranges of keys, i.e. key>10 and key<20
   int key_min=0;
   int key_max=-1;
 
@@ -129,7 +140,6 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   string value;
   int    count=0;
   int    diff;
-  int index_diff;
 
   // open the table file
   if ((rc = rf.open(table + ".tbl", 'r')) < 0) {
@@ -137,52 +147,98 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     return rc;
   }
 
-  //cout<<"Size of cond.size(): "<<cond.size()<<endl;
-  //check for 'key' in WHERE clause
+  //loop through conditions in WHERE clause, setting ranges and setting the flags and indexes described above
   for(unsigned i = 0; i < cond.size(); i++)
   {
     //if there is a condition in where clause has a key
     if(cond[i].attr==1)
     {
+
       key_in_where = true;
 
       //if equal
       if(cond[i].comp == SelCond::EQ)
       {
+        //if a minimum or maximum were set, error because you cant query an '=' and an inequality at the
+        //same time
+        if(key_min !=0 || key_max != -1)
+        {
+          should_not_index = true;
+        }
+
+        //check for multiple equal statements
         if(one_equal_statement==true)
         {
-          more_than_one_equal_statement = true;
+          //more_than_one_equal_statement = true;
+          rf.close();
+          return -1; //appropriate error code not found
         }
+        //if the key inputted was negative, error out
         key_min = key_max = atoi(cond[i].value);
+        if(key_min < 0)
+        {
+          rf.close();
+          return RC_INVALID_ATTRIBUTE;
+        }
         //cout<<"Value of key_min: "<<key_min<<endl;
         one_equal_statement= true;
       }
       //if greater than
       else if(cond[i].comp == SelCond::GT)
       {
+        if(one_equal_statement == true)
+        {
+          should_not_index = true;
+        }
         greater_than_not_equal = true;
         int new_key_min = atoi(cond[i].value);
         if(new_key_min>key_min)
         {
           key_min = new_key_min;
         }
+
+        if(key_min<0)
+        {
+          rf.close();
+          return RC_INVALID_ATTRIBUTE;
+        }
        // cout<<"Key_min for GT clause is now: "<<key_min<<endl;
       }
       //if less than
       else if(cond[i].comp == SelCond::LT)
       {
+        if(one_equal_statement == true)
+        {
+          should_not_index = true;
+        }
         less_than_not_equal = true;
         int new_key_max = atoi(cond[i].value);
+        //check if a negative key was inputted
+        if(new_key_max <= 0)
+        {
+          rf.close();
+          return RC_INVALID_ATTRIBUTE;
+        }
         if(new_key_max < key_max || key_max == -1)
         {
           key_max = new_key_max;
         }
+
         //cout<<"Key_max for LT clause is now: "<<key_max<<endl;
       }
       //if less than or equal to
       else if(cond[i].comp == SelCond::LE)
       {
+        if(one_equal_statement ==true)
+        {
+          should_not_index = true;
+        }
         int new_key_max = atoi(cond[i].value);
+        if(new_key_max < 0)
+        {
+          rf.close();
+          return RC_INVALID_ATTRIBUTE;
+        }
         if(new_key_max < key_max || key_max == -1)
         {
           key_max = new_key_max;
@@ -192,7 +248,16 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       //if greater than or equal to
       else if(cond[i].comp == SelCond::GE)
       {
+        if(one_equal_statement == true)
+        {
+          should_not_index = true;
+        }
         int new_key_min = atoi(cond[i].value);
+        if(new_key_min < 0)
+        {
+          rf.close();
+          return RC_INVALID_ATTRIBUTE;
+        }
         if(new_key_min >key_min)
         {
           key_min = new_key_min;
@@ -201,12 +266,13 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       }
     }
 
+    //flag for simply checking if there is a value statement in the where clause
     else if(cond[i].attr==2)
     {
       value_in_where = true;
     }
 
-
+    //check if there is a not equal
     if(cond[i].comp==SelCond::NE)
     {
       not_equal_found = true;
@@ -219,7 +285,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   //cout<<"RC value from opening B+ Tree: "<<rc<<endl;
 
   //if index file exists and there is a condition on key
-  if((rc==0) && (key_in_where == true||attr==4) && (not_equal_found==false) && ((key_min<=key_max)||key_max==-1) && (more_than_one_equal_statement==false))
+  if((rc==0) && (key_in_where == true||attr==4) && (not_equal_found==false) && (should_not_index==false) && ((key_min<=key_max)||key_max==-1))
   {
     //if looking for just one tuple
     if(key_min == key_max)
@@ -262,6 +328,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
               }
             }
           }
+        }
+        else{
+                printTuple(attr, key, value);
+                count++;
         }
       }
     }
@@ -311,6 +381,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             }
           }
 
+        }
+        else{
+                printTuple(attr, key, value);
+                count++;
         }
       }
 
@@ -363,6 +437,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             }
           }
         }
+        else{
+                printTuple(attr, key, value);
+                count++;
+        }
 
       }
     }
@@ -377,8 +455,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   }
   else
   {
-    //cout<<"Got inside else statement"<<endl;
-    // scan the table file from the beginning
+
     rid.pid = rid.sid = 0;
     count = 0;
     while (rid < rf.endRid()) {
