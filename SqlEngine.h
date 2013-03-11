@@ -71,6 +71,8 @@ class SqlEngine {
 
   static void printTuple(const int& attr, const int& key, const std::string& value);
 
+  static bool isValidValue(const char * value, const char * cond_value, SelCond::Comparator comp_type);
+
 
 };
 

@@ -115,6 +115,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   bool one_equal_statement = false;
   bool more_than_one_equal_statement = false;
 
+
   //used for locate
   IndexCursor cursor;
   cursor.pid =-1;
@@ -199,10 +200,12 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         //cout<<"Key_min for GE clause is now: "<<key_min<<endl;
       }
     }
+
     else if(cond[i].attr==2)
     {
       value_in_where = true;
     }
+
 
     if(cond[i].comp==SelCond::NE)
     {
@@ -260,8 +263,6 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             }
           }
         }
-
-
       }
     }
     //range where max is not specified but minimum is, ie key > 800
@@ -293,6 +294,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             rf.close();
             return rc;
           }
+
         }
         if(value_in_where==true)
         {
@@ -308,6 +310,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
               }
             }
           }
+
         }
       }
 

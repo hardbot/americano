@@ -321,14 +321,8 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     // Initalize
     BTLeafNode lf;
     getLeaf(cursor.pid, lf);
-
-    // Set output values
-    key = (lf.get_element(cursor.eid)).key;
-    rid = (lf.get_element(cursor.eid)).rec_id;
-
-    cursor.eid += 1;
-
     // See if eid is in current leaf node
+    //
     if (lf.getKeyCount() <= cursor.eid)
     {
       // Set to sibling
@@ -336,8 +330,16 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
         return -1;
       cursor.pid = lf.getNextNodePtr();
       cursor.eid = 0;
+      getLeaf(cursor.pid, lf);
     }
 
+    // Set output values
+    key = (lf.get_element(cursor.eid)).key;
+    rid = (lf.get_element(cursor.eid)).rec_id;
+
+
+
+    cursor.eid += 1;
     // Iterate eid to go to to next element
     return 0;
 }
