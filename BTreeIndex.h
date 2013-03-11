@@ -44,14 +44,13 @@ class BTreeIndex {
   // Helper Functions
   RC init();
   RC setMeta();
+  RC loadMeta();
   RC getLeaf(PageId pid, BTLeafNode &lf);
   RC getNonLeaf(PageId pid, BTNonLeafNode &nlf);
 
   // Print Debugging Helper Functions
   void print_height();
-  RC printTree();
-  RC printTreeRecursive(int pid, int cur_height);
-  RC printIndex(IndexCursor ic);
+  void printIndex(IndexCursor ic);
 
   /**
    * Open the index file in read or write mode.
@@ -110,15 +109,12 @@ class BTreeIndex {
    */
   RC readForward(IndexCursor& cursor, int& key, RecordId& rid);
 
-  RC loadMeta();
 
  private:
   PageFile pf;         /// the PageFile used to store the actual b+tree in disk
 
   PageId   rootPid;    /// the PageId of the root node
   int      treeHeight; /// the height of the tree
-  BTLeafNode lf_cache;
-  int      lf_cache_pid;
   /// Note that the content of the above two variables will be gone when
   /// this class is destructed. Make sure to store the values of the two 
   /// variables in disk, so that they can be reconstructed when the index

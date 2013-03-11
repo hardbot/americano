@@ -10,7 +10,6 @@
 #include "BTreeIndex.h"
 #include "BTreeNode.h"
 #include <iostream>
-
 using namespace std;
 
 /*
@@ -19,7 +18,97 @@ using namespace std;
 BTreeIndex::BTreeIndex()
 {
     rootPid = -1;
-   // lf_cache_pid = -1;
+}
+/*
+ * Used to initiate the root and height of tree
+ */
+RC BTreeIndex::init()
+{
+  char buffer[1024];
+  TreeMeta tm;
+  tm.root = rootPid = 1;
+  tm.height = treeHeight = 1;
+  memcpy(buffer, &tm, sizeof(struct TreeMeta));
+  return pf.write(0, buffer);
+}
+
+/*
+ * Sets the metadata (root and height) for tree in pid 0
+ */
+RC BTreeIndex::setMeta()
+{
+  char buffer[1024];
+  TreeMeta tm;
+  tm.root = rootPid;
+  tm.height = treeHeight;
+  memcpy(buffer, &tm, sizeof(struct TreeMeta));
+  return pf.write(0, buffer);
+}
+
+/*
+ * Loads metadata from pid 0
+ */
+RC BTreeIndex::loadMeta()
+{
+  char buffer[1024];
+  TreeMeta tm;
+  RC ret;
+  ret = pf.read(0, buffer);
+  memcpy(&tm, buffer, sizeof(struct TreeMeta));
+  rootPid = tm.root;
+  treeHeight = tm.height;
+  return ret;
+}
+
+/*
+ * Reads leaf at pid, and outputs it to lf
+ */
+RC BTreeIndex::getLeaf(PageId pid, BTLeafNode &lf)
+{
+    char buffer[pf.PAGE_SIZE];
+    RC ret;
+    ret = pf.read(pid, buffer);
+    memcpy(&lf, buffer, sizeof(struct BTLeafNode));
+    return ret;
+}
+
+/*
+ * Reads nonleaf at pid, and outputs it to nlf
+ */
+RC BTreeIndex::getNonLeaf(PageId pid, BTNonLeafNode &nlf)
+{
+    char buffer[pf.PAGE_SIZE];
+    RC ret;
+    ret = pf.read(pid, buffer);
+    memcpy(&nlf, buffer, sizeof(struct BTNonLeafNode));
+    return ret;
+}
+/*
+ * Prints height of tree
+ */
+void BTreeIndex::print_height()
+{
+  cout << "Tree Height: " << treeHeight << endl;
+}
+
+/* 
+ * Prints data stored in cursor
+ */
+void BTreeIndex::printIndex(IndexCursor ic)
+{
+  BTLeafNode leaf;
+  int key;
+  RecordId rid;
+
+  cout << "Printing Index Cursor: " << endl;
+  cout << "Index pid: " << ic.pid << endl;
+  cout << "Index eid: " << ic.eid << endl;
+
+  getLeaf(ic.pid, leaf);
+  leaf.readEntry(ic.eid, key, rid);
+  cout << "Key: " << key << endl;
+  cout << "Pid: " << rid.pid << endl;
+  cout << "Sid: " << rid.sid << endl;
 }
 
 /*
@@ -44,52 +133,6 @@ RC BTreeIndex::open(const string& indexname, char mode)
     return ret;
 }
 
-RC BTreeIndex::init()
-{
-  char buffer[1024];
-  TreeMeta tm;
-  tm.root = rootPid = 1;
-  tm.height = treeHeight = 1;
-  memcpy(buffer, &tm, sizeof(struct TreeMeta));
-  pf.write(0, buffer);
-}
-
-RC BTreeIndex::setMeta()
-{
-  char buffer[1024];
-  TreeMeta tm;
-  tm.root = rootPid;
-  tm.height = treeHeight;
-  memcpy(buffer, &tm, sizeof(struct TreeMeta));
-  pf.write(0, buffer);
-}
-
-RC BTreeIndex::loadMeta()
-{
-  char buffer[1024];
-  pf.read(0, buffer);
-  TreeMeta tm;
-  memcpy(&tm, buffer, sizeof(struct TreeMeta));
-  rootPid = tm.root;
-  treeHeight = tm.height;
-}
-
-RC BTreeIndex::getLeaf(PageId pid, BTLeafNode &lf)
-{
-    char buffer[pf.PAGE_SIZE];
-    pf.read(pid, buffer);
-    memcpy(&lf, buffer, sizeof(struct BTLeafNode));
-    return 0;
-}
-
-RC BTreeIndex::getNonLeaf(PageId pid, BTNonLeafNode &nlf)
-{
-    char buffer[pf.PAGE_SIZE];
-    pf.read(pid, buffer);
-    memcpy(&nlf, buffer, sizeof(struct BTNonLeafNode));
-    return 0;
-}
-
 /*
  * Close the index file.
  * @return error code. 0 if no error
@@ -105,8 +148,7 @@ RC BTreeIndex::close()
 // < 0 = error
 RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& rid, PageId &sibling_pid, int &sibling_key, int &mid_key)
 {
-  int child_pid = -1, propagate = -1; 
-  int end_pid = -1;
+  int child_pid = -1, end_pid = -1, propagate = -1; 
   BTLeafNode leaf, sibling;
   BTNonLeafNode non_leaf, non_leaf_sibling;
 
@@ -132,8 +174,6 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
         non_leaf.initializeRoot(pid, mid_key, sibling_pid);
 
       non_leaf.write(end_pid, pf);
-      //print_height();
-      //cout << rootPid << endl;
     }
   }
   // End case if reached leaf
@@ -143,8 +183,6 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     if (pf.endPid() > 1)
       getLeaf(pid, leaf);
 
-    //leaf.print_buffer();
-
     // Split keys if overflow 
     RC err = leaf.insert(key, rid);
     if ( err == RC_NODE_FULL )
@@ -153,9 +191,7 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
       // sibling_key set to first key of sibling
       err = leaf.insertAndSplit(key, rid, sibling, sibling_key);
       if (err < 0)
-      {
         return err;
-      }
       end_pid = pf.endPid();
 
       // Write update leaf
@@ -191,10 +227,6 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
     // Propagate sibling keys up
     if (propagate == 1)
     {
-      // Check if keys are valid
-      //if (sibling_key == -1 || sibling_pid == -1)
-        //return -1;
-      
       RC err;
       // At some non leaf node
       if (cur_height == treeHeight -1)
@@ -238,11 +270,6 @@ RC BTreeIndex::insert_rec(int cur_height, PageId pid, int key, const RecordId& r
   return 0;
 }
 
-void BTreeIndex::print_height()
-{
-  cout << "Tree Height: " << treeHeight << endl;
-}
-
 /*
  * Insert (key, RecordId) pair to the index.
  * @param key[IN] the key for the value inserted into the index
@@ -251,6 +278,11 @@ void BTreeIndex::print_height()
  */
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
+    // Error check
+   if (key < 0)
+     return RC_INVALID_ATTRIBUTE;
+   if (rid.pid < 0 || rid.sid < 0)
+     return RC_INVALID_RID;
     // Assume Tree is initialized
     PageId pid = -5;
     int sibling_key = -6;
@@ -283,7 +315,6 @@ RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& c
     BTLeafNode leaf;
     BTNonLeafNode non_leaf;
     int eid = 0, child_pid = 0;
-    //cout<<"Tree height: "<<treeHeight<<endl;
     if (cur_height == treeHeight)
     {
       //cout<<"GOT THIS FAR IN LOCATE!"<<endl;
@@ -291,7 +322,7 @@ RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& c
       leaf.locate(searchKey, eid);
       cursor.pid = pid;
       cursor.eid = eid;
-
+      return 0;
     }
     else
     {
@@ -300,11 +331,13 @@ RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& c
 
       locate_rec(cur_height+1, child_pid, searchKey, cursor);
     }
-    return 0;
+    return RC_END_OF_TREE;
 }
 
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
+    if (searchKey < 0)
+      return RC_INVALID_ATTRIBUTE;
     return locate_rec(1, rootPid, searchKey, cursor);
 }
 
@@ -318,16 +351,20 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
  */
 RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 {
+    // Error check
+    if(cursor.pid < 0 || cursor.eid < 0)
+      return RC_INVALID_CURSOR;
+
     // Initalize
     BTLeafNode lf;
     getLeaf(cursor.pid, lf);
+
     // See if eid is in current leaf node
-    //
     if (lf.getKeyCount() <= cursor.eid)
     {
       // Set to sibling
       if (lf.getNextNodePtr() == -1)
-        return -1;
+        return RC_END_OF_TREE;
       cursor.pid = lf.getNextNodePtr();
       cursor.eid = 0;
       getLeaf(cursor.pid, lf);
@@ -337,26 +374,8 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     key = (lf.get_element(cursor.eid)).key;
     rid = (lf.get_element(cursor.eid)).rec_id;
 
-
-
-    cursor.eid += 1;
     // Iterate eid to go to to next element
+    cursor.eid += 1;
+
     return 0;
-}
-
-RC BTreeIndex::printIndex(IndexCursor ic)
-{
-  cout << "Printing Index Cursor: " << endl;
-  cout << "Index pid: " << ic.pid << endl;
-  cout << "Index eid: " << ic.eid << endl;
-
-  BTLeafNode leaf;
-  int key;
-  RecordId rid;
-  getLeaf(ic.pid, leaf);
-  leaf.readEntry(ic.eid, key, rid);
-  cout << "Key: " << key << endl;
-  cout << "Pid: " << rid.pid << endl;
-  cout << "Sid: " << rid.sid << endl;
-
 }
