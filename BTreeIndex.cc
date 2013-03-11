@@ -327,7 +327,9 @@ RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& c
     else
     {
       getNonLeaf(pid, non_leaf);
-      non_leaf.locateChildPtr(searchKey, child_pid);
+      RC ret = non_leaf.locateChildPtr(searchKey, child_pid);
+      if (ret <0)
+        return ret;
 
       locate_rec(cur_height+1, child_pid, searchKey, cursor);
     }
