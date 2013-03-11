@@ -330,8 +330,7 @@ RC BTreeIndex::locate_rec(int cur_height, int pid, int searchKey, IndexCursor& c
       RC ret = non_leaf.locateChildPtr(searchKey, child_pid);
       if (ret <0)
         return ret;
-
-      locate_rec(cur_height+1, child_pid, searchKey, cursor);
+      return locate_rec(cur_height+1, child_pid, searchKey, cursor);
     }
     return RC_END_OF_TREE;
 }
